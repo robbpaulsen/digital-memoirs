@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Slideshow</title>
+    <style>
+        body { text-align: center; background: #000; color: #fff; }
+        img { max-height: 90vh; max-width: 90vw; }
+    </style>
+</head>
+<body>
+    <h1>Slideshow del evento</h1>
+    <div id="slideshow"></div>
+
+<script>
+    const contenedor = document.getElementById("slideshow");
+    let imagenes = [];
+    let index = 0;
+
+    // Función para obtener la lista de imágenes del servidor
+    async function obtenerImagenes() {
+        try {
+            const response = await fetch('/api/imagenes');
+            const data = await response.json();
+            imagenes = data.imagenes;
+        } catch (error) {
+            console.error('Error al obtener imágenes:', error);
+        }
+    }
+
+    // Función para mostrar la siguiente imagen
+    function mostrarImagen() {
+        if (imagenes.length === 0) {
+            contenedor.innerHTML = "<p>No hay imágenes aún 😅</p>";
+            return;
+        }
+        contenedor.innerHTML = `<img src="/static/uploads/${imagenes[index]}" alt="slide">`;
+        index = (index + 1) % imagenes.length;
+    }
+
+    // Iniciar el slideshow y actualizar la lista de imágenes
+    async function iniciarSlideshow() {
+        await obtenerImagenes();
+        mostrarImagen();
+        
+        // Intervalo para cambiar de imagen cada 7 segundos
+        setInterval(mostrarImagen, 7000); 
+
+        // Intervalo para actualizar la lista de imágenes cada 10 segundos
+        setInterval(obtenerImagenes, 10000); 
+    }
+
+    iniciarSlideshow();
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Subir imágenes</title>
+    <style>
+        body {
+            font-family: 'Lucida Sans', monospace;
+            background: linear-gradient(135deg, #060017);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: #6d3fc9;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            width: 350px;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 1.5rem;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        input[type="file"] {
+            padding: 0.7rem;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            background: #fafafa;
+            cursor: pointer;
+        }
+        input[type="file"]:hover {
+            border-color: #666;
+        }
+        button {
+            background: navy;
+            color: white;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover {
+            background: #003366;
+        }
+        a {
+            display: inline-block;
+            margin-top: 1rem;
+            text-decoration: none;
+            color: navy;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1 style="color: #17dd9c">Sube tu Imgen</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="file" accept="image/*" required>
+            <button type="submit">Subir</button>
+        </form>
+        <a href="{{ url_for('slideshow') }}", style="color: #17dd9c">Ver slideshow</a>
+    </div>
+</body>
+</html>

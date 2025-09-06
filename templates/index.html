@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Código QR del evento</title>
+    <style>
+        body {
+            font-family: style=#45d798, 'Lucida Sans', monospace;
+            background: linear-gradient(135deg, #060017);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background: #6d3fc9;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+        }
+        h1 {
+            margin-bottom: 1rem;
+        }
+        img {
+            display: block;
+            margin: 0 auto;
+            border-radius: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: #17DD9C">Código QR del evento</h1>
+        <h2 style="color: #000000">Escanéalo: 🙃🙌😊</h2>
+        <img src="{{ url_for('serve_qr', filename=qr_filename) }}" alt="Código QR">
+    </div>
+</body>
+</html>
