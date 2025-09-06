@@ -6,7 +6,7 @@
     <style>
         body {
             font-family: 'Lucida Sans', monospace;
-            background: linear-gradient(135deg, #060017);
+            background-image: linear-gradient(to right bottom, #fd73e8, #cb72dd, #9b6dcb, #7165b2, #4f5a95, #415d90, #385f88, #36607f, #3e728c, #4a8497, #5a96a1, #6ea8aa);
             color: #333;
             display: flex;
             justify-content: center;
@@ -18,56 +18,110 @@
             background: #6d3fc9;
             padding: 2rem;
             border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
-            width: 350px;
+            box-shadow: 0 4px 15px rgba(0.12,0,0,0.8);
+            width: 380px;
             text-align: center;
         }
         h1 {
             margin-bottom: 1.5rem;
+            color: #17dd9c;
         }
         form {
             display: flex;
             flex-direction: column;
-            gap: 2rem;
+            gap: 1.5rem;
         }
+        /* Ocultamos el input real */
         input[type="file"] {
-            padding: 0.7rem;
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            background: #fafafa;
-            cursor: pointer;
+            display: none;
         }
-        input[type="file"]:hover {
-            border-color: #666;
+        .custom-file-upload {
+            display: inline-block;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            background: #17dd9c;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .custom-file-upload:hover {
+            background: #14c48b;
+            transform: scale(1.05);
+        }
+        .preview {
+            margin-top: 1rem;
+            display: none;
+        }
+        .preview img {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            transition: transform 0.3s ease;
+        }
+        .preview img:hover {
+            transform: scale(1.03);
         }
         button {
             background: navy;
             color: white;
             padding: 0.8rem;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.6);
             cursor: pointer;
             font-size: 1rem;
+            font-weight: bold;
+            transition: background 0.3s ease, transform 0.2s ease;
         }
         button:hover {
             background: #003366;
+            box-shadow: 0 2px 8px rgba(0,0.8,0.8,0);
+            transform: scale(1.05);
         }
         a {
             display: inline-block;
             margin-top: 1rem;
             text-decoration: none;
-            color: navy;
+            color: #17dd9c;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="card">
-        <h1 style="color: #17dd9c">Sube tu Imgen</h1>
+        <h1>Sube tu Imagen</h1>
         <form method="POST" enctype="multipart/form-data">
-            <input type="file" name="file" accept="image/*" required>
-            <button type="submit">Subir</button>
+            <label for="file-upload" class="custom-file-upload">
+                📁 Elegir Imagen
+            </label>
+            <input id="file-upload" type="file" name="file" accept="image/*" required>
+            
+            <div class="preview" id="preview">
+                <img id="preview-img" src="#" alt="Vista previa">
+            </div>
+
+            <button type="submit">⬆️ Subir</button>
         </form>
-        <a href="{{ url_for('slideshow') }}", style="color: #17dd9c">Ver slideshow</a>
+        <a href="{{ url_for('slideshow') }}">▶️ Ver slideshow</a>
     </div>
+
+    <script>
+        const fileInput = document.getElementById("file-upload");
+        const preview = document.getElementById("preview");
+        const previewImg = document.getElementById("preview-img");
+
+        fileInput.addEventListener("change", () => {
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    previewImg.src = e.target.result;
+                    preview.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
 </body>
 </html>

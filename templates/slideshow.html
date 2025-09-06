@@ -4,8 +4,62 @@
     <meta charset="UTF-8">
     <title>Slideshow</title>
     <style>
-        body { text-align: center; background: #000; color: #fff; }
-        img { max-height: 90vh; max-width: 90vw; }
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+
+            /* Fondo degradado animado */
+            background: linear-gradient(270deg, 
+                #36cc6e, #00c3aa, #00b4e3, #009eff, #007cf9, 
+                #007df9, #007efa, #007ffa, #00a5ff, #00c5ff, 
+                #00e2fd, #5ffbf1);
+            background-size: 2400% 2400%;
+            animation: gradientFlow 60s ease infinite;
+        }
+
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #slideshow {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+
+        #slideshow img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            margin: auto;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        #slideshow img.active {
+            opacity: 1;
+            z-index: 1;
+        }
+
+        h1 {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+            text-shadow: 2px 2px 8px rgba(0,0,0,4.4);
+        }
     </style>
 </head>
 <body>
@@ -28,25 +82,40 @@
         }
     }
 
-    // Función para mostrar la siguiente imagen
+    // Función para mostrar la siguiente imagen con transición
     function mostrarImagen() {
         if (imagenes.length === 0) {
             contenedor.innerHTML = "<p>No hay imágenes aún 😅</p>";
             return;
         }
-        contenedor.innerHTML = `<img src="/static/uploads/${imagenes[index]}" alt="slide">`;
+
+        // Crear imagen nueva
+        const img = document.createElement("img");
+        img.src = `/static/uploads/${imagenes[index]}`;
+        img.classList.add("active");
+
+        // Insertar antes que la anterior
+        contenedor.appendChild(img);
+
+        // Quitar imágenes viejas después de la transición
+        const prev = contenedor.querySelectorAll("img");
+        if (prev.length > 1) {
+            prev[0].classList.remove("active");
+            setTimeout(() => prev[0].remove(), 1500); // esperar transición
+        }
+
         index = (index + 1) % imagenes.length;
     }
 
-    // Iniciar el slideshow y actualizar la lista de imágenes
+    // Iniciar el slideshow y actualizar lista
     async function iniciarSlideshow() {
         await obtenerImagenes();
         mostrarImagen();
         
-        // Intervalo para cambiar de imagen cada 7 segundos
-        setInterval(mostrarImagen, 1000); 
+        // Cambiar cada 7 segundos
+        setInterval(mostrarImagen, 7000); 
 
-        // Intervalo para actualizar la lista de imágenes cada 10 segundos
+        // Refrescar lista cada 10 segundos
         setInterval(obtenerImagenes, 10000); 
     }
 
