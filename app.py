@@ -6,6 +6,22 @@ import webbrowser
 from flask import Flask, send_from_directory, render_template, request, redirect, url_for, jsonify
 from werkzeug.utils import secure_filename
 
+"""
+Este script de Python crea una aplicación web utilizando el framework Flask para un "slideshow" de imágenes. La aplicación 
+permite a los usuarios subir imágenes a través de un QR que se genera al iniciar el servidor, y luego 
+muestra todas las imágenes subidas en una presentación de diapositivas.
+
+- **`get_local_ip()`:** Obtiene la dirección IP local del servidor para que otros dispositivos en la misma red puedan acceder a la aplicación.
+- **`generar_qr_evento(host_ip, port)`:** Genera y guarda un código QR en un archivo PNG. El código QR contiene la URL para subir imágenes al servidor.
+- **`allowed_file(filename)`:** Valida la extensión de un archivo para asegurar que sea un tipo de imagen permitido.
+- **`mostrar_qr()`:** Muestra una página con el código QR generado.
+- **`serve_qr(filename)`:** Sirve el archivo del código QR desde su directorio.
+- **`pagina_de_carga()`:** Maneja la lógica para la página de subida de imágenes, tanto para mostrar el formulario (`GET`) como para procesar la subida del archivo (`POST`).
+- **`slideshow()`:** Renderiza la página que muestra todas las imágenes subidas en un formato de presentación de diapositivas.
+- **`api_imagenes()`:** Sirve como un endpoint de API que devuelve una lista de los nombres de los archivos de imagen subidos en formato JSON.
+- **`if __name__ == '__main__':`:** Es el punto de entrada de la aplicación. Configura la IP y el puerto, genera el QR, muestra las URLs de acceso y ejecuta la aplicación Flask.
+"""
+
 # --- Configuración ---
 UPLOAD_FOLDER = "static/uploads"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "bmp", "heif", "webp"}
