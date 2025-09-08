@@ -6,9 +6,8 @@ dist/
 wheels/
 *.egg-info
 
-# Statis folder
+# image folder
 uploads/*.png
-uploads/*.jpeg
 uploads/*.jpg
 uploads/*.webp
 uploads/*.webm
@@ -19,6 +18,7 @@ uploads/*.bmp
 uploads/*.raw
 uploads/*.mov
 uploads/*.mkv
+uploads/*.jpeg
 
 # Qr Folder
 qr
