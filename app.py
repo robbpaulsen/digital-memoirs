@@ -1,134 +1,186 @@
+from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory
 import os
-import socket
-import segno
 import uuid
+import qrcode
+from PIL import Image
+import threading
+import time
 import webbrowser
-from flask import Flask, send_from_directory, render_template, request, redirect, url_for, jsonify
-from werkzeug.utils import secure_filename
-
-"""
-Este script de Python crea una aplicación web utilizando el framework Flask para un "slideshow" de imágenes. La aplicación 
-permite a los usuarios subir imágenes a través de un QR que se genera al iniciar el servidor, y luego 
-muestra todas las imágenes subidas en una presentación de diapositivas.
-
-- **`get_local_ip()`:** Obtiene la dirección IP local del servidor para que otros dispositivos en la misma red puedan acceder a la aplicación.
-- **`generar_qr_evento(host_ip, port)`:** Genera y guarda un código QR en un archivo PNG. El código QR contiene la URL para subir imágenes al servidor.
-- **`allowed_file(filename)`:** Valida la extensión de un archivo para asegurar que sea un tipo de imagen permitido.
-- **`mostrar_qr()`:** Muestra una página con el código QR generado.
-- **`serve_qr(filename)`:** Sirve el archivo del código QR desde su directorio.
-- **`pagina_de_carga()`:** Maneja la lógica para la página de subida de imágenes, tanto para mostrar el formulario (`GET`) como para procesar la subida del archivo (`POST`).
-- **`slideshow()`:** Renderiza la página que muestra todas las imágenes subidas en un formato de presentación de diapositivas.
-- **`api_imagenes()`:** Sirve como un endpoint de API que devuelve una lista de los nombres de los archivos de imagen subidos en formato JSON.
-- **`if __name__ == '__main__':`:** Es el punto de entrada de la aplicación. Configura la IP y el puerto, genera el QR, muestra las URLs de acceso y ejecuta la aplicación Flask.
-"""
-
-# --- Configuración ---
-UPLOAD_FOLDER = "static/uploads"
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "bmp", "heif", "webp"}
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+from datetime import datetime
+import json
 
 app = Flask(__name__)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = 'uploads'
+# No file size limits - extension validation provides protection
 
-# --- Asegurar que exista la carpeta de imágenes ---
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# Create uploads directory if it doesn't exist
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# --- PASO 1: Obtener IP local ---
-def get_local_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        s.connect(('10.255.255.255', 1))
-        IP = s.getsockname()[0]
-    except Exception:
-        IP = '127.0.0.1'
-    finally:
-        s.close()
-    return IP
+# Global variables for slideshow
+current_images = []
+current_image_index = 0
+slideshow_lock = threading.Lock()
 
-# --- PASO 2: Generar QR ---
-def generar_qr_evento(host_ip, port):
-    qr_directory = "qr"
-    qr_filename = "qr-evento.png"
-    qr_filepath = os.path.join(qr_directory, qr_filename)
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
-    if not os.path.exists(qr_directory):
-        os.makedirs(qr_directory)
-
-    if not os.path.exists(qr_filepath):
-        upload_url = f"http://{host_ip}:{port}/subir"
-        # ⚡ QR con color personalizado y bordes redondeados
-        qrcode = segno.make(upload_url, error='h')
-        qrcode.save(
-            qr_filepath,
-            scale=10,
-            dark="navy",        # color azul oscuro
-            light="#f5f5f5",    # fondo gris muy claro
-            border=2           # borde más delgado
-        )
-
-    return qr_filename
-
-# --- Helper: Validar extensión ---
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# --- Ruta raíz con QR ---
+class UploadHandler(FileSystemEventHandler):
+    """Handles new file uploads and renames them with UUID"""
+    
+    def on_created(self, event):
+        if not event.is_directory:
+            file_path = event.src_path
+            filename = os.path.basename(file_path)
+            
+            # Wait a moment to ensure file is fully written
+            time.sleep(0.5)
+            
+            if allowed_file(filename):
+                # Generate UUID filename while keeping extension
+                file_ext = filename.rsplit('.', 1)[1].lower()
+                new_filename = f"{uuid.uuid4()}.{file_ext}"
+                new_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
+                
+                try:
+                    os.rename(file_path, new_path)
+                    print(f"Renamed {filename} to {new_filename}")
+                    update_image_list()
+                except Exception as e:
+                    print(f"Error renaming file: {e}")
+
+def update_image_list():
+    """Update the global image list for slideshow"""
+    global current_images
+    with slideshow_lock:
+        current_images = [f for f in os.listdir(app.config['UPLOAD_FOLDER']) 
+                         if allowed_file(f)]
+        current_images.sort(key=lambda x: os.path.getctime(
+            os.path.join(app.config['UPLOAD_FOLDER'], x)
+        ), reverse=True)
+
+def generate_qr_code(url):
+    """Generate QR code for the upload URL"""
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(url)
+    qr.make(fit=True)
+    
+    qr_img = qr.make_image(fill_color="navy", back_color="white")
+    qr_path = "static/qr_code.png"
+    os.makedirs("static", exist_ok=True)
+    qr_img.save(qr_path)
+    return qr_path
+
 @app.route('/')
-def mostrar_qr():
-    return render_template("index.html", qr_filename="qr-evento.png")
+@app.route('/display')
+def display():
+    """Main display screen with QR code and slideshow"""
+    # Generate QR code for upload URL (replace with your Pi's IP)
+    upload_url = request.url_root + 'upload'
+    qr_path = generate_qr_code(upload_url)
+    
+    return render_template('display.html', qr_path=qr_path, upload_url=upload_url)
 
-# --- Servir QR ---
-@app.route('/qr/<path:filename>')
-def serve_qr(filename):
-    return send_from_directory('qr', filename)
+@app.route('/qr')
+def qr():
+    """QR code only page - cleaner for guests to read"""
+    upload_url = request.url_root + 'upload'
+    qr_path = generate_qr_code(upload_url)
+    
+    return render_template('qr.html', qr_path=qr_path, upload_url=upload_url)
 
-# --- Página de subida ---
-@app.route('/subir', methods=["GET", "POST"])
-def pagina_de_carga():
-    if request.method == "POST":
-        if "file" not in request.files:
-            return "No se envió archivo", 400
-        file = request.files["file"]
-        if file.filename == "":
-            return "Archivo no seleccionado", 400
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            # 👇️ Generar un nombre seguro con UUID
-            extension = file.filename.rsplit('.', 1)[1].lower()
-            nombre_unico = str(uuid.uuid4()) + '.' + extension
-            filepath = os.path.join(app.config["UPLOAD_FOLDER"], nombre_unico)
-            file.save(filepath)
-            return redirect(url_for("pagina_de_carga"))
-            filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-            file.save(filepath)
-            return redirect(url_for("pagina_de_carga"))
-    return render_template("subir.html")
+@app.route('/upload')
+def upload_page():
+    """Upload page for guests"""
+    return render_template('upload.html')
 
-# --- Página de slideshow ---
-@app.route('/slideshow')
-def slideshow():
-    # Obtener todas las imágenes en static/uploads
-    imagenes = os.listdir(app.config["UPLOAD_FOLDER"])
-    imagenes = [f"uploads/{img}" for img in imagenes]  # rutas relativas
-    return render_template("slideshow.html", imagenes=imagenes)
+@app.route('/upload', methods=['POST'])
+def upload_files():
+    """Handle file uploads"""
+    if 'files' not in request.files:
+        return jsonify({'error': 'No files selected'}), 400
+    
+    files = request.files.getlist('files')
+    uploaded_count = 0
+    
+    for file in files:
+        if file and file.filename and allowed_file(file.filename):
+            # Save with original filename first, handler will rename with UUID
+            filename = file.filename
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            uploaded_count += 1
+    
+    if uploaded_count > 0:
+        return jsonify({'success': f'{uploaded_count} photos uploaded successfully!'})
+    else:
+        return jsonify({'error': 'No valid files uploaded'}), 400
 
-# --- Nueva Ruta: API para obtener imágenes ---
-@app.route('/api/imagenes')
-def api_imagenes():
-    imagenes = os.listdir(app.config["UPLOAD_FOLDER"])
-    return jsonify({"imagenes": imagenes})
+@app.route('/api/images')
+def get_images():
+    """API endpoint to get current images for slideshow"""
+    with slideshow_lock:
+        return jsonify({
+            'images': current_images,
+            'count': len(current_images)
+        })
 
-# --- PUNTO DE ENTRADA ---
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    """Serve uploaded files"""
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/api/next_image')
+def next_image():
+    """Get next image for slideshow"""
+    global current_image_index
+    
+    with slideshow_lock:
+        if not current_images:
+            return jsonify({'image': None})
+        
+        image = current_images[current_image_index]
+        current_image_index = (current_image_index + 1) % len(current_images)
+        
+        return jsonify({
+            'image': url_for('uploaded_file', filename=image),
+            'filename': image,
+            'total': len(current_images)
+        })
+
+def setup_file_watcher():
+    """Setup file system watcher for uploads directory"""
+    event_handler = UploadHandler()
+    observer = Observer()
+    observer.schedule(event_handler, app.config['UPLOAD_FOLDER'], recursive=False)
+    observer.start()
+    return observer
+
+def open_browser():
+    """Open browser after 3 seconds delay"""
+    time.sleep(3)
+    webbrowser.open('http://localhost:5000/qr')
+
 if __name__ == '__main__':
-    PORT = 5000
-    HOST_IP = get_local_ip()
-    generar_qr_evento(host_ip=HOST_IP, port=PORT)
-    print(f"\n\tServidor listo 🚀")
-    print(f"\tPágina con QR:      http://{HOST_IP}:{PORT}/")
-    print(f"\tSubida de imágenes: http://{HOST_IP}:{PORT}/subir")
-    print(f"\tSlideshow:          http://{HOST_IP}:{PORT}/slideshow\n")
-
-    app.run(host='0.0.0.0', port=PORT, debug=True)
-
-    # 👇️ Abrir el navegador automáticamente
-    url_principal = f"http://{HOST_IP}:{PORT}/"
-    webbrowser.open_new(url_principal)
+    # Initialize image list
+    update_image_list()
+    
+    # Start file watcher
+    observer = setup_file_watcher()
+    
+    # Start browser opening thread
+    browser_thread = threading.Thread(target=open_browser, daemon=True)
+    browser_thread.start()
+    
+    try:
+        # Run Flask app
+        print("Starting Flask app...")
+        print("Display will open in browser in 3 seconds...")
+        app.run(host='0.0.0.0', port=5000, debug=True)
+    except KeyboardInterrupt:
+        observer.stop()
+    
+    observer.join()

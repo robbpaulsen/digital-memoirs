@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Sharing Display</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            height: 100vh;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .slideshow-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .slideshow-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        .no-photos {
+            text-align: center;
+            font-size: 2em;
+            opacity: 0.7;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            padding: 30px;
+        }
+        
+        .qr-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .qr-code {
+            background: #17dd9c;
+            padding: 8px;
+            border-radius: 18px;
+            margin: 8px;
+        }
+        
+        .qr-code img {
+            width: 200px;
+            height: 200px;
+        }
+        
+        .instructions {
+            text-align: center;
+            line-height: 1.6;
+        }
+        
+        .instructions h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        .instructions p {
+            font-size: 1em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .url-display {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 0.9em;
+            margin-top: 15px;
+            word-break: break-all;
+        }
+        
+        .stats {
+            margin-top: 20px;
+            text-align: center;
+            opacity: 0.8;
+        }
+        
+        .photo-counter {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #FFD700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="slideshow-area">
+            <div id="slideshow">
+                <div class="no-photos">
+                    <h2>🎉 Share Your Memories!</h2>
+                    <p>Scan the QR code to upload photos</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <div class="qr-section">
+                <div class="qr-code">
+                    <img src="{{ qr_path }}" alt="QR Code">
+                </div>
+                <div class="instructions">
+                    <h2>📸 Upload Photos</h2>
+                    <p>1. Scan QR code with your phone</p>
+                    <p>2. Select photos to share</p>
+                    <p>3. Watch them appear here!</p>
+                    <div class="url-display">{{ upload_url }}</div>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="photo-counter">
+                    <span id="photo-count">0</span> photos shared
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let slideInterval;
+        let currentImages = [];
+        
+        async function loadNextImage() {
+            try {
+                const response = await fetch('/api/next_image');
+                const data = await response.json();
+                
+                if (data.image) {
+                    const slideshow = document.getElementById('slideshow');
+                    slideshow.innerHTML = `<img src="${data.image}" alt="Shared memory" class="slideshow-image">`;
+                    
+                    document.getElementById('photo-count').textContent = data.total;
+                } else {
+                    const slideshow = document.getElementById('slideshow');
+                    slideshow.innerHTML = `
+                        <div class="no-photos">
+                            <h2>🎉 Share Your Memories!</h2>
+                            <p>Scan the QR code to upload photos</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading image:', error);
+            }
+        }
+        
+        async function checkForNewImages() {
+            try {
+                const response = await fetch('/api/images');
+                const data = await response.json();
+                
+                if (data.count !== currentImages.length) {
+                    currentImages = data.images;
+                    document.getElementById('photo-count').textContent = data.count;
+                    
+                    if (data.count > 0 && !slideInterval) {
+                        // Start slideshow
+                        loadNextImage();
+                        slideInterval = setInterval(loadNextImage, 5000); // Change image every 5 seconds
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking for new images:', error);
+            }
+        }
+        
+        // Check for new images every 2 seconds
+        setInterval(checkForNewImages, 2000);
+        
+        // Initial load
+        checkForNewImages();
+    </script>
+</body>
+</html>
