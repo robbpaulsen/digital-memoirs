@@ -6,21 +6,16 @@ dist/
 wheels/
 *.egg-info
 
-# image folder
-uploads/*.png
-uploads/*.jpg
-uploads/*.webp
-uploads/*.webm
-uploads/*.heif
-uploads/*.gif
-uploads/*.mp4
-uploads/*.bmp
-uploads/*.raw
-uploads/*.mov
-uploads/*.mkv
-uploads/*.jpeg
+# ignore everything on directory
+uploads/*
+static/*
 
-# Qr Folder
-qr
+# But keep the directory as is part of structure
+!uploads/.gitkeep
+!static/.gitkeep
+
 # Virtual environments
 .venv
+.env
+env
+venv
