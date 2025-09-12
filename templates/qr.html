@@ -1,3 +1,4 @@
+<!-- templates/qr.html -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -13,7 +14,7 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Lucida Sans', monospace;
             background: linear-gradient(270deg,
                     #36cc6e, #00c3aa, #00b4e3, #009eff, #007cf9,
                     #007df9, #007efa, #007ffa, #00a5ff, #00c5ff,
@@ -58,8 +59,8 @@
         }
 
         .qr-code {
-            background: white;
-            padding: 30px;
+            background: #817ce1;
+            padding: 12px;
             border-radius: 20px;
             display: inline-block;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
@@ -70,6 +71,7 @@
             width: 250px;
             height: 250px;
             display: block;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
         }
 
         .instructions {
@@ -108,17 +110,6 @@
             line-height: 35px;
             font-weight: bold;
             margin-right: 15px;
-        }
-
-        .url-display {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 15px 20px;
-            border-radius: 15px;
-            font-family: monospace;
-            font-size: 1em;
-            margin-top: 20px;
-            word-break: break-all;
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .footer {
@@ -176,50 +167,43 @@
 </head>
 
 <body>
-    <div class="navigation">
-        <a href="/display">← Back to slideshow</a>
-    </div>
 
     <div class="qr-container">
         <div class="header">
-            <h1>📸 Share Your Photos!</h1>
-            <p>Help us capture all the amazing memories from today</p>
+            <h1>📸 Comparte Fotos!</h1>
+            <p>Ayudanos a Capturar Todos los Momentos Asombrosos!</p>
         </div>
 
         <div class="qr-section">
             <div class="qr-code">
-                <img src="{{ qr_path }}" alt="QR Code to upload photos">
+                <img src="{{ qr_path }}" alt="QR para Cargar tus Fotos">
             </div>
         </div>
 
         <div class="instructions">
-            <h2>🚀 How to Share</h2>
+            <h2>🚀 Como Compartir?</h2>
 
             <div class="step">
                 <span class="step-number">1</span>
-                Open your phone's camera app
+                Abre tu Aplicacion de Camara o Abre tus Imagenes
             </div>
 
             <div class="step">
                 <span class="step-number">2</span>
-                Point at the QR code above
+                Apunta hacia el QR de Arriba
             </div>
 
             <div class="step">
                 <span class="step-number">3</span>
-                Tap the notification that appears
+                Presiona la Notificacion Entrante
             </div>
 
             <div class="step">
                 <span class="step-number">4</span>
-                Select and upload your photos!
+                Selecciona y Sube!
             </div>
         </div>
 
-        <div class="footer">
-            <p>✨ Your photos will appear on the main display instantly!</p>
-            <div class="url-display">{{ upload_url }}</div>
-        </div>
     </div>
 </body>
 

@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory
+from werkzeug.utils import secure_filename
 import os
 import uuid
 import qrcode
@@ -162,7 +163,7 @@ def setup_file_watcher():
 def open_browser():
     """Open browser after 3 seconds delay"""
     time.sleep(3)
-    webbrowser.open('http://localhost:5000/qr')
+    webbrowser.open('http://localhost:5000/display')
 
 if __name__ == '__main__':
     # Initialize image list

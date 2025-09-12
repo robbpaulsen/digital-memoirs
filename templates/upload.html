@@ -1,5 +1,7 @@
+<!-- templates/upload.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,17 +15,16 @@
         
         body {
             font-family: 'Lucida Sans', monospace;
-            background-image: linear-gradient(to right bottom, #fd73e8, #cb72dd, #9b6dcb, #7165b2, #4f5a95, #415d90, #385f88, #36607f, #3e728c, #4a8497, #5a96a1, #6ea8aa);
-            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            justify-content: center;
+            padding: 20px;
         }
         
         .upload-container {
-            background: #667eea;
+            background: linear-gradient(135deg,#6c6ef9, #00c3aa);
             padding: 40px;
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
@@ -142,10 +143,10 @@
         }
         
         .upload-btn:disabled {
-            background: #ccc;
+            background: linear-gradient(135deg, #00c3aa, #6c6ef9);
             cursor: not-allowed;
             transform: none;
-            box-shadow: none;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
         }
         
         .progress-bar {
@@ -183,17 +184,7 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-        
-        .back-link {
-            margin-top: 20px;
-            color: #667eea;
-            text-decoration: none;
-            font-size: 0.9em;
-        }
-        
-        .back-link:hover {
-            text-decoration: underline;
-        }
+
     </style>
 </head>
 <body>
@@ -225,8 +216,8 @@
         </div>
         
         <div class="message" id="message"></div>
-        
-        <a href="/" class="back-link">← Back to main display</a>
+<!--         
+        <a href="/" class="back-link">← Back to main display</a> -->
     </div>
 
     <script>
@@ -258,7 +249,7 @@
             e.preventDefault();
             uploadArea.classList.remove('dragover');
             const files = Array.from(e.dataTransfer.files);
-            handleFiles({target: {files: files}});
+            handleFiles({ target: { files: files } });
         });
         
         function handleFiles(event) {
@@ -361,4 +352,5 @@
         }
     </script>
 </body>
+
 </html>
