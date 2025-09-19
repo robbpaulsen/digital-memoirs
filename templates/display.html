@@ -14,18 +14,21 @@
         
         body {
             font-family: 'Lucida Sans', monospace;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 50%, #667eea 100%);
             color: white;
             overflow: hidden;
         }
         
         .container {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
             width: 100vw;
-            padding: 20px;
+            padding: 0;
+            overflow: hidden;
+            position: relative;
         }
         
         .slideshow-area {
@@ -35,27 +38,114 @@
             background: rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             backdrop-filter: blur(10px);
-            position: relative;
+            position: absolute;
             overflow: hidden;
-            width: 100%;
-            height: 100%;
-            max-width: 100%;
-            max-height: 100%;
+            
+            /* Rotación para orientación vertical del contenido */
+            transform: rotate(90deg);
+            transform-origin: center center;
+            
+            /* Dimensiones intercambiadas debido a la rotación */
+            width: 90vh; /* Usa la altura de la ventana como ancho */
+            height: 90vw; /* Usa el ancho de la ventana como altura */
+            
+            /* Centrado manual del contenedor rotado */
+            top: 50%;
+            left: 50%;
+            margin-top: -45vw; /* -height/2 */
+            margin-left: -45vh; /* -width/2 */
         }
         
         .slideshow-image {
-            max-width: 100%;
-            max-height: 100%;
+            width: 100%;
+            height: 100%;
             object-fit: contain;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            transition: opacity 0.5s ease-in-out;
+            transition: opacity 0.5s ease-in-out, transform 0.3s ease;
+            /* Las imágenes se adaptan automáticamente al contenedor rotado */
+        }
+        
+        /* Efecto de entrada suave para las imágenes - reducido para contenedor rotado */
+        .slideshow-image:hover {
+            transform: scale(1.01);
         }
         
         .no-photos {
             text-align: center;
-            font-size: 2em;
+            font-size: 2.2em;
             opacity: 0.7;
+            padding: 30px;
+            line-height: 1.4;
+            /* El texto se ajusta automáticamente dentro del contenedor rotado */
+        }
+        
+        .no-photos h2 {
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .no-photos p {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        /* Estilos específicos para diferentes orientaciones de imagen */
+        .slideshow-image.portrait {
+            object-fit: contain;
+        }
+        
+        .slideshow-image.landscape {
+            object-fit: contain;
+        }
+        
+        /* Media queries adaptadas para contenedor rotado */
+        @media screen and (max-width: 768px) {
+            .slideshow-area {
+                width: 95vh;
+                height: 95vw;
+                margin-top: -47.5vw;
+                margin-left: -47.5vh;
+            }
+            
+            .no-photos {
+                font-size: 1.8em;
+                padding: 20px;
+            }
+        }
+        
+        @media screen and (min-width: 1200px) {
+            .slideshow-area {
+                width: 85vh;
+                height: 85vw;
+                margin-top: -42.5vw;
+                margin-left: -42.5vh;
+            }
+        }
+        
+        /* Optimización para pantallas muy altas (modo kiosco vertical) */
+        @media screen and (min-height: 1200px) {
+            .slideshow-area {
+                width: 80vh;
+                height: 80vw;
+                margin-top: -40vw;
+                margin-left: -40vh;
+            }
+            
+            .no-photos {
+                font-size: 2.5em;
+                padding: 40px;
+            }
+        }
+        
+        /* Optimización para pantallas muy anchas */
+        @media screen and (min-width: 1600px) {
+            .slideshow-area {
+                width: 75vh;
+                height: 75vw;
+                margin-top: -37.5vw;
+                margin-left: -37.5vh;
+            }
         }
 
     </style>

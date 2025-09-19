@@ -15,10 +15,10 @@ import socket
 import atexit
 import signal
 import sys
+import netifaces  # pip install netifaces (opcional)
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
-# No file size limits - extension validation provides protection
 
 # Create uploads directory if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -28,7 +28,7 @@ current_images = []
 current_image_index = 0
 slideshow_lock = threading.Lock()
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'heic', 'heif'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -49,29 +49,72 @@ def signal_handler(sig, frame):
     cleanup_qr_code()
     sys.exit(0)
 
-def get_local_ip():
-    """Get the local IP address of the machine"""
+def get_all_local_ips():
+    """Get all possible local IP addresses"""
+    ips = []
+    
+    # Method 1: Using netifaces (if available)
     try:
-        # Connect to a remote address to determine the local IP
+        import netifaces
+        for interface in netifaces.interfaces():
+            addrs = netifaces.ifaddresses(interface)
+            if netifaces.AF_INET in addrs:
+                for addr in addrs[netifaces.AF_INET]:
+                    ip = addr['addr']
+                    if not ip.startswith('127.') and not ip.startswith('169.254.'):
+                        ips.append(('netifaces_' + interface, ip))
+    except ImportError:
+        pass
+    
+    # Method 2: Socket connection method
+    try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
-        local_ip = s.getsockname()[0]
+        ips.append(('socket_method', s.getsockname()[0]))
         s.close()
-        return local_ip
-    except Exception:
-        # Fallback method
-        try:
-            hostname = socket.gethostname()
-            local_ip = socket.gethostbyname(hostname)
-            if local_ip.startswith("127."):
-                # If hostname resolution gives localhost, try alternative method
-                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                s.connect(("1.1.1.1", 80))
-                local_ip = s.getsockname()[0]
-                s.close()
-            return local_ip
-        except Exception:
-            return "127.0.0.1"
+    except:
+        pass
+    
+    # Method 3: Hostname method
+    try:
+        hostname = socket.gethostname()
+        ip = socket.gethostbyname(hostname)
+        if not ip.startswith('127.'):
+            ips.append(('hostname_method', ip))
+    except:
+        pass
+    
+    # Method 4: Get all local addresses
+    try:
+        hostname = socket.gethostname()
+        for ip in socket.getaddrinfo(hostname, None):
+            addr = ip[4][0]
+            if ':' not in addr and not addr.startswith('127.') and not addr.startswith('169.254.'):
+                ips.append(('getaddrinfo_method', addr))
+    except:
+        pass
+    
+    return ips
+
+def get_best_local_ip():
+    """Get the most likely correct local IP"""
+    all_ips = get_all_local_ips()
+    
+    if not all_ips:
+        return "127.0.0.1"
+    
+    # Prefer socket method as it's most reliable
+    for method, ip in all_ips:
+        if method == 'socket_method':
+            return ip
+    
+    # Otherwise, prefer 192.168.x.x or 10.x.x.x networks
+    for method, ip in all_ips:
+        if ip.startswith('192.168.') or ip.startswith('10.'):
+            return ip
+    
+    # Return first available
+    return all_ips[0][1]
 
 class UploadHandler(FileSystemEventHandler):
     """Handles new file uploads and renames them with UUID"""
@@ -81,21 +124,19 @@ class UploadHandler(FileSystemEventHandler):
             file_path = event.src_path
             filename = os.path.basename(file_path)
             
-            # Wait a moment to ensure file is fully written
             time.sleep(0.5)
             
             if allowed_file(filename):
-                # Generate UUID filename while keeping extension
                 file_ext = filename.rsplit('.', 1)[1].lower()
                 new_filename = f"{uuid.uuid4()}.{file_ext}"
                 new_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
                 
                 try:
                     os.rename(file_path, new_path)
-                    print(f"Renamed {filename} to {new_filename}")
+                    print(f"✅ Renamed {filename} to {new_filename}")
                     update_image_list()
                 except Exception as e:
-                    print(f"Error renaming file: {e}")
+                    print(f"❌ Error renaming file: {e}")
 
 def update_image_list():
     """Update the global image list for slideshow"""
@@ -123,35 +164,62 @@ def generate_qr_code(url):
 @app.route('/display')
 def display():
     """Main display screen with QR code and slideshow"""
-    # Get local IP and generate QR code for upload URL
-    local_ip = get_local_ip()
+    local_ip = get_best_local_ip()
     upload_url = f"http://{local_ip}:5000/upload"
     qr_path = generate_qr_code(upload_url)
     
-    print(f"Server accessible at: http://{local_ip}:5000")
-    print(f"Upload URL for QR: {upload_url}")
+    print(f"📱 Display accessed from: {request.remote_addr}")
     
     return render_template('display.html', qr_path=qr_path, upload_url=upload_url)
 
 @app.route('/qr')
 def qr():
     """QR code only page - cleaner for guests to read"""
-    # Get local IP and generate QR code for upload URL
-    local_ip = get_local_ip()
+    local_ip = get_best_local_ip()
     upload_url = f"http://{local_ip}:5000/upload"
     qr_path = generate_qr_code(upload_url)
     
     return render_template('qr.html', qr_path=qr_path, upload_url=upload_url)
 
+@app.route('/debug')
+def debug_info():
+    """Debug information page"""
+    all_ips = get_all_local_ips()
+    best_ip = get_best_local_ip()
+    
+    debug_data = {
+        'all_detected_ips': all_ips,
+        'best_ip': best_ip,
+        'request_info': {
+            'remote_addr': request.remote_addr,
+            'user_agent': request.headers.get('User-Agent'),
+            'host': request.headers.get('Host'),
+            'url_root': request.url_root
+        },
+        'server_info': {
+            'upload_folder': app.config['UPLOAD_FOLDER'],
+            'current_images_count': len(current_images)
+        }
+    }
+    
+    return jsonify(debug_data)
+
 @app.route('/upload')
 def upload_page():
     """Upload page for guests"""
+    print(f"📱 Upload page accessed from: {request.remote_addr}")
+    print(f"🌐 User Agent: {request.headers.get('User-Agent', 'Unknown')}")
+    print(f"🔗 Host header: {request.headers.get('Host', 'Unknown')}")
+    
     return render_template('upload.html')
 
 @app.route('/upload', methods=['POST'])
 def upload_files():
     """Handle file uploads"""
+    print(f"📤 Upload request from: {request.remote_addr}")
+    
     if 'files' not in request.files:
+        print("❌ No files in request")
         return jsonify({'error': 'No files selected'}), 400
     
     files = request.files.getlist('files')
@@ -159,16 +227,18 @@ def upload_files():
     
     for file in files:
         if file and file.filename and allowed_file(file.filename):
-            # Save with original filename first, handler will rename with UUID
             filename = file.filename
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
             uploaded_count += 1
+            print(f"✅ Saved file: {filename}")
+    
+    print(f"📊 Uploaded {uploaded_count} files successfully")
     
     if uploaded_count > 0:
-        return jsonify({'success': f'{uploaded_count} photos uploaded successfully!'})
+        return jsonify({'success': f'{uploaded_count} fotos subidas exitosamente!'})
     else:
-        return jsonify({'error': 'No valid files uploaded'}), 400
+        return jsonify({'error': 'No se subieron archivos válidos'}), 400
 
 @app.route('/api/images')
 def get_images():
@@ -202,6 +272,15 @@ def next_image():
             'total': len(current_images)
         })
 
+@app.route('/test')
+def test_endpoint():
+    """Simple test endpoint"""
+    return jsonify({
+        'status': 'Server is working!',
+        'timestamp': datetime.now().isoformat(),
+        'client_ip': request.remote_addr
+    })
+
 def setup_file_watcher():
     """Setup file system watcher for uploads directory"""
     event_handler = UploadHandler()
@@ -211,10 +290,47 @@ def setup_file_watcher():
     return observer
 
 def open_browser():
-    """Open browser after 3 seconds delay"""
+    """Open browser after delay"""
     time.sleep(3)
-    local_ip = get_local_ip()
+    local_ip = get_best_local_ip()
     webbrowser.open(f'http://{local_ip}:5000/display')
+
+def print_network_info():
+    """Print comprehensive network information"""
+    print("\n" + "="*60)
+    print("🔍 INFORMACIÓN DE RED DETALLADA")
+    print("="*60)
+    
+    all_ips = get_all_local_ips()
+    best_ip = get_best_local_ip()
+    
+    print(f"\n📍 IPs DETECTADAS:")
+    for method, ip in all_ips:
+        marker = "⭐" if ip == best_ip else "  "
+        print(f"{marker} {method:20} : {ip}")
+    
+    print(f"\n🎯 IP SELECCIONADA: {best_ip}")
+    
+    print(f"\n🌐 URLs DE ACCESO:")
+    print(f"   Local (esta máquina): http://localhost:5000")
+    print(f"   Red local (móviles) : http://{best_ip}:5000")
+    print(f"   Upload directo      : http://{best_ip}:5000/upload")
+    print(f"   Debug info          : http://{best_ip}:5000/debug")
+    print(f"   Test conectividad   : http://{best_ip}:5000/test")
+    
+    print(f"\n📱 INSTRUCCIONES PARA MÓVIL:")
+    print(f"   1. Conectar al mismo WiFi")
+    print(f"   2. Abrir navegador móvil")
+    print(f"   3. Ir a: http://{best_ip}:5000/upload")
+    print(f"   4. O escanear código QR")
+    
+    print(f"\n🔧 TROUBLESHOOTING:")
+    print(f"   • Si no funciona, probar: http://localhost:5000/debug")
+    print(f"   • Verificar firewall del sistema")
+    print(f"   • Asegurar que el móvil esté en la misma red WiFi")
+    print(f"   • Probar desde navegador de escritorio: http://{best_ip}:5000/test")
+    
+    print("="*60)
 
 if __name__ == '__main__':
     # Register cleanup functions
@@ -222,7 +338,7 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
     
     # Clean up any existing QR code at startup
-    print("🚀 Starting Flask app...")
+    print("🚀 Iniciando aplicación Flask con diagnóstico avanzado...")
     cleanup_qr_code()
     
     # Initialize image list
@@ -231,24 +347,27 @@ if __name__ == '__main__':
     # Start file watcher
     observer = setup_file_watcher()
     
-    # Get and display local IP
-    local_ip = get_local_ip()
-    print(f"📱 Local access: http://localhost:5000")
-    print(f"🌐 Network access: http://{local_ip}:5000")
-    print(f"📸 Upload URL for QR: http://{local_ip}:5000/upload")
-    print(f"🖥️ Display will open in browser in 3 seconds...")
+    # Print detailed network information
+    print_network_info()
     
     # Start browser opening thread
     browser_thread = threading.Thread(target=open_browser, daemon=True)
     browser_thread.start()
     
     try:
-        # Run Flask app on all interfaces (0.0.0.0) so it's accessible from network
-        app.run(host='0.0.0.0', port=5000, debug=True)
+        # Run Flask app on all interfaces
+        print(f"\n🖥️ Display se abrirá en el navegador en 3 segundos...")
+        print(f"⏳ Iniciando servidor...")
+        app.run(host='0.0.0.0', port=5000, debug=False)
     except KeyboardInterrupt:
-        print("\n🛑 Received interrupt signal")
+        print("\n🛑 Interrupción recibida")
+        cleanup_qr_code()
+        observer.stop()
+    except Exception as e:
+        print(f"\n❌ Error del servidor: {e}")
         cleanup_qr_code()
         observer.stop()
     finally:
         observer.stop()
         observer.join()
+        print("👋 Aplicación cerrada")
