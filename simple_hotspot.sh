@@ -45,7 +45,7 @@ setup_hostapd() {
     # Create hostapd config with hidden SSID
     cat > /etc/hostapd/hostapd.conf << EOF
 # Hostapd config for Image Sharing Project
-interface=wlan1
+interface=wlan0
 driver=nl80211
 
 # Network name (SSID) - Hidden network
@@ -118,7 +118,7 @@ setup_network() {
     cat >> /etc/dhcpcd.conf << EOF
 
 # Static IP configuration for Image Sharing Hotspot
-interface wlan1
+interface wlan0
 static ip_address=${HOTSPOT_IP}/24
 nohook wpa_supplicant
 EOF
@@ -148,7 +148,7 @@ EOF
 # Startup script for Image Sharing Hotspot
 
 # Ensure WiFi interface is up
-ip link set wlan1 up
+ip link set wlan0 up
 
 # Start services
 systemctl start hostapd
