@@ -92,10 +92,10 @@ class UploadHandler(FileSystemEventHandler):
                 
                 try:
                     os.rename(file_path, new_path)
-                    print(f"Renamed {filename} to {new_filename}")
+                    print(f"📸 Renamed {filename} to {new_filename}")
                     update_image_list()
                 except Exception as e:
-                    print(f"Error renaming file: {e}")
+                    print(f"❌ Error renaming file: {e}")
 
 def update_image_list():
     """Update the global image list for slideshow"""
@@ -128,8 +128,8 @@ def display():
     upload_url = f"http://{local_ip}:5000/upload"
     qr_path = generate_qr_code(upload_url)
     
-    print(f"Server accessible at: http://{local_ip}:5000")
-    print(f"Upload URL for QR: {upload_url}")
+    print(f"🌐 Server accessible at: http://{local_ip}:5000")
+    print(f"📱 Upload URL for QR: {upload_url}")
     
     return render_template('display.html', qr_path=qr_path, upload_url=upload_url)
 
@@ -164,11 +164,12 @@ def upload_files():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
             uploaded_count += 1
+            print(f"✅ Uploaded: {filename}")
     
     if uploaded_count > 0:
-        return jsonify({'success': f'{uploaded_count} photos uploaded successfully!'})
+        return jsonify({'success': f'{uploaded_count} fotos subidas exitosamente! 🎉'})
     else:
-        return jsonify({'error': 'No valid files uploaded'}), 400
+        return jsonify({'error': 'No se pudieron subir archivos válidos'}), 400
 
 @app.route('/api/images')
 def get_images():
@@ -202,6 +203,25 @@ def next_image():
             'total': len(current_images)
         })
 
+@app.route('/api/stats')
+def get_stats():
+    """API endpoint to get application statistics"""
+    with slideshow_lock:
+        total_size = sum(
+            os.path.getsize(os.path.join(app.config['UPLOAD_FOLDER'], f))
+            for f in current_images
+        )
+        
+        return jsonify({
+            'total_photos': len(current_images),
+            'total_size_mb': round(total_size / (1024 * 1024), 2),
+            'server_status': 'online',
+            'last_upload': max([
+                os.path.getctime(os.path.join(app.config['UPLOAD_FOLDER'], f))
+                for f in current_images
+            ], default=0) if current_images else 0
+        })
+
 def setup_file_watcher():
     """Setup file system watcher for uploads directory"""
     event_handler = UploadHandler()
@@ -214,7 +234,11 @@ def open_browser():
     """Open browser after 3 seconds delay"""
     time.sleep(3)
     local_ip = get_local_ip()
-    webbrowser.open(f'http://{local_ip}:5000/display')
+    try:
+        webbrowser.open(f'http://{local_ip}:5000/display')
+        print(f"🚀 Browser opened: http://{local_ip}:5000/display")
+    except Exception as e:
+        print(f"⚠️ Could not open browser automatically: {e}")
 
 if __name__ == '__main__':
     # Register cleanup functions
@@ -222,7 +246,7 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
     
     # Clean up any existing QR code at startup
-    print("🚀 Starting Flask app...")
+    print("🚀 Starting Digital Memoirs app...")
     cleanup_qr_code()
     
     # Initialize image list
@@ -243,8 +267,9 @@ if __name__ == '__main__':
     browser_thread.start()
     
     try:
-        # Run Flask app on all interfaces (0.0.0.0) so it's accessible from network
-        app.run(host='0.0.0.0', port=5000, debug=True)
+        # 🔧 SOLUCIÓN AL BUG: Cambiar debug=True por debug=False
+        # En modo debug, Flask usa un reloader que causa que se abran 2 pestañas
+        app.run(host='0.0.0.0', port=5000, debug=False)
     except KeyboardInterrupt:
         print("\n🛑 Received interrupt signal")
         cleanup_qr_code()
@@ -252,3 +277,4 @@ if __name__ == '__main__':
     finally:
         observer.stop()
         observer.join()
+        print("👋 Digital Memoirs closed gracefully")

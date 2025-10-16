@@ -9,15 +9,27 @@ wheels/
 # ignore everything on directory
 uploads/*
 static/*
-.kilocode/*
 
 # But keep the directory as is part of structure
 !uploads/.gitkeep
 !static/.gitkeep
-!.kilocode/.gitkeep
 
 # Virtual environments
 .venv
 .env
 env
 venv
+
+# LLMS directories 
+.claude
+.kilocode
+.gemini
+CLAUDE.md
+prd.md
+PRD.md
+brief.md
+BRIEF.md
+Brief.md
+PRP.md
+Prp.md
+prp.md
