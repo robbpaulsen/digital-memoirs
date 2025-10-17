@@ -133,9 +133,8 @@ Se han implementado mejoras significativas y correcciones de errores para optimi
 
 ---
 
-## 🚀 Próximos Pasos Sugeridos
+## 🚀 Próximos Pasos
 
 1.  **Implementar los archivos corregidos:** Reemplazar los archivos originales con las versiones `_fixed` (luego renombrarlos a sus nombres originales).
 2.  **Probar cada issue reportado** para confirmar las correcciones.
-3.  **Realizar testing de carga** con 700-900 imágenes.
-4.  **Considerar asignación de nombres de dominio amigables.**
+3.  **Considerar asignación de nombres de dominio amigables, a los endpoints locales.**
