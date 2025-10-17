@@ -1,13 +1,14 @@
-<!-- templates/qr.html - VERSIÓN MEJORADA -->
+<!-- templates/qr.html - VERSIÓN CORREGIDA -->
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compartir Fotos - QR Code</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
-        
+
         :root {
             --dark-bg-primary: #0a0a0f;
             --dark-bg-secondary: #1a1a2e;
@@ -31,7 +32,10 @@
 
         body {
             font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
-            background: linear-gradient(135deg, var(--dark-bg-primary) 0%, var(--dark-bg-secondary) 50%, var(--dark-bg-tertiary) 100%);
+            background: var(--dark-bg-primary);
+            background-image:
+                radial-gradient(circle at 25% 25%, var(--dark-bg-tertiary) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, var(--dark-bg-secondary) 0%, transparent 50%);
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
@@ -80,8 +84,17 @@
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.08; }
-            50% { transform: scale(1.2); opacity: 0.12; }
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.08;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 0.12;
+            }
         }
 
         .qr-container {
@@ -90,7 +103,7 @@
             backdrop-filter: blur(25px);
             border: 1px solid var(--glass-border);
             border-radius: 40px;
-            box-shadow: 
+            box-shadow:
                 0 25px 50px rgba(0, 0, 0, 0.5),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
             max-width: 550px;
@@ -115,8 +128,15 @@
         }
 
         @keyframes borderGlow {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 0.8; }
+
+            0%,
+            100% {
+                opacity: 0.4;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
         }
 
         .container-content {
@@ -142,8 +162,13 @@
         }
 
         @keyframes titlePulse {
-            0% { filter: brightness(1); }
-            100% { filter: brightness(1.2); }
+            0% {
+                filter: brightness(1);
+            }
+
+            100% {
+                filter: brightness(1.2);
+            }
         }
 
         .header p {
@@ -164,7 +189,7 @@
             padding: 20px;
             border-radius: 30px;
             display: inline-block;
-            box-shadow: 
+            box-shadow:
                 0 15px 35px rgba(0, 0, 0, 0.4),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
             margin-bottom: 35px;
@@ -174,7 +199,7 @@
 
         .qr-code:hover {
             transform: translateY(-5px);
-            box-shadow: 
+            box-shadow:
                 0 25px 50px rgba(0, 245, 255, 0.3),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
@@ -218,9 +243,19 @@
         }
 
         @keyframes scan {
-            0% { transform: translateY(0); opacity: 0; }
-            50% { opacity: 1; }
-            100% { transform: translateY(240px); opacity: 0; }
+            0% {
+                transform: translateY(0);
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(240px);
+                opacity: 0;
+            }
         }
 
         .instructions {
@@ -229,7 +264,7 @@
             border-radius: 30px;
             padding: 40px;
             margin-top: 35px;
-            box-shadow: 
+            box-shadow:
                 0 15px 35px rgba(0, 0, 0, 0.2),
                 inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
@@ -345,6 +380,20 @@
             transform: translateY(0);
         }
 
+        /* Status indicator */
+        .status-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--accent-green);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            backdrop-filter: blur(10px);
+        }
+
         /* Mobile optimizations */
         @media (max-width: 600px) {
             .container-content {
@@ -406,15 +455,27 @@
         }
 
         @keyframes successPop {
-            0% { transform: translate(-50%, -50%) scale(0); }
-            80% { transform: translate(-50%, -50%) scale(1.2); }
-            100% { transform: translate(-50%, -50%) scale(1); }
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+            }
+
+            80% {
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
         }
     </style>
 </head>
 
 <body>
     <div class="bg-pattern"></div>
+
+    <div class="status-indicator">
+        🟢 Sistema Activo
+    </div>
 
     <div class="qr-container">
         <div class="container-content">
@@ -483,7 +544,7 @@
             }
 
             setupEventListeners() {
-                // Click en QR para ampliar (futuro feature)
+                // Click on QR for future features
                 this.elements.qrCode.addEventListener('click', () => {
                     this.showSuccessAnimation();
                 });
@@ -503,7 +564,7 @@
                     this.showSuccessAnimation();
                     this.showTemporaryMessage('¡Enlace copiado!');
                 } catch (error) {
-                    // Fallback para navegadores más antiguos
+                    // Fallback for older browsers
                     this.fallbackCopyUrl();
                 }
             }
@@ -513,7 +574,7 @@
                 textArea.value = this.uploadUrl;
                 document.body.appendChild(textArea);
                 textArea.select();
-                
+
                 try {
                     document.execCommand('copy');
                     this.showSuccessAnimation();
@@ -521,7 +582,7 @@
                 } catch (error) {
                     this.showTemporaryMessage('Error al copiar', 'error');
                 }
-                
+
                 document.body.removeChild(textArea);
             }
 
@@ -533,7 +594,7 @@
             }
 
             showTemporaryMessage(text, type = 'success') {
-                // Crear elemento temporal para mostrar mensaje
+                // Create temporary element to show message
                 const message = document.createElement('div');
                 message.style.cssText = `
                     position: fixed;
@@ -561,18 +622,18 @@
             }
 
             async startStatusCheck() {
-                // Verificar estado del servidor cada 10 segundos
+                // Check server status every 10 seconds
                 setInterval(async () => {
                     try {
-                        const response = await fetch('/api/images');
+                        const response = await fetch('/api/status');
                         if (response.ok) {
-                            // Servidor funcionando
+                            // Server working
                             this.elements.qrImage.style.filter = 'contrast(1.1) brightness(1.1)';
                         } else {
                             throw new Error('Server error');
                         }
                     } catch (error) {
-                        // Error de conexión
+                        // Connection error
                         this.elements.qrImage.style.filter = 'contrast(0.8) brightness(0.8) grayscale(0.5)';
                     }
                 }, 10000);
@@ -604,4 +665,5 @@
         document.head.appendChild(style);
     </script>
 </body>
+
 </html>

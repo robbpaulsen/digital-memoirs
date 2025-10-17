@@ -1,13 +1,14 @@
-<!-- templates/display.html - VERSIÓN MEJORADA -->
+<!-- templates/display.html - VERSIÓN CORREGIDA -->
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memory Sharing Display</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
-        
+
         :root {
             --dark-bg-primary: #0a0a0f;
             --dark-bg-secondary: #1a1a2e;
@@ -27,16 +28,24 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
-            background: linear-gradient(135deg, var(--dark-bg-primary) 0%, var(--dark-bg-secondary) 50%, var(--dark-bg-tertiary) 100%);
+            background: var(--dark-bg-primary);
+            /* FIX: Simplified gradient for better performance - no more cursor jumping */
+            background-image:
+                radial-gradient(circle at 25% 25%, var(--dark-bg-tertiary) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, var(--dark-bg-secondary) 0%, transparent 50%);
             color: var(--text-primary);
             overflow: hidden;
             min-height: 100vh;
+            /* FIX: Prevent performance issues and cursor behavior */
+            will-change: auto;
+            transform: translateZ(0);
+            backface-visibility: hidden;
         }
 
-        /* Partículas de fondo animadas */
+        /* Particles optimized for performance */
         .background-particles {
             position: fixed;
             top: 0;
@@ -45,6 +54,8 @@
             height: 100%;
             z-index: 1;
             pointer-events: none;
+            /* FIX: Optimize particle rendering */
+            will-change: transform;
         }
 
         .particle {
@@ -55,13 +66,25 @@
             border-radius: 50%;
             opacity: 0.6;
             animation: float 6s ease-in-out infinite;
+            /* FIX: Improve particle performance */
+            will-change: transform;
+            transform: translateZ(0);
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.6; }
-            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.6;
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+                opacity: 1;
+            }
         }
-        
+
         .container {
             display: flex;
             flex-direction: column;
@@ -74,9 +97,9 @@
             z-index: 2;
         }
 
-        /* Header con información del evento */
+        /* Header with event info */
         .header-info {
-            position: absolute;
+            position: fixed;
             top: 20px;
             left: 20px;
             background: var(--glass-bg);
@@ -100,13 +123,22 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 0.6; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.2); }
+
+            0%,
+            100% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
         }
 
-        /* Contador de fotos */
+        /* Photo counter */
         .photo-counter {
-            position: absolute;
+            position: fixed;
             top: 20px;
             right: 20px;
             background: var(--glass-bg);
@@ -134,7 +166,8 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        
+
+        /* FIX: CRITICAL CSS CONTAINER CENTERING SOLUTION */
         .slideshow-area {
             display: flex;
             align-items: center;
@@ -143,20 +176,24 @@
             border: 1px solid var(--glass-border);
             border-radius: 30px;
             backdrop-filter: blur(20px);
-            position: relative;
+            position: fixed;
+            /* FIX: Changed from absolute to fixed */
             overflow: hidden;
-            box-shadow: 
+            box-shadow:
                 0 25px 50px rgba(0, 0, 0, 0.5),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            
-            transform: rotate(90deg);
-            transform-origin: center center;
-            width: 85vh;
-            height: 85vw;
+
+            /* FIX: Perfect centering solution */
             top: 50%;
             left: 50%;
-            margin-top: -42.5vw;
-            margin-left: -42.5vh;
+            width: 85vh;
+            height: 85vw;
+            transform: translate(-50%, -50%) rotate(90deg);
+            transform-origin: center center;
+
+            /* FIX: Optimize rendering performance */
+            will-change: transform;
+            backface-visibility: hidden;
         }
 
         .slideshow-area::before {
@@ -174,10 +211,17 @@
         }
 
         @keyframes borderGlow {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
+
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
         }
-        
+
         .slideshow-image {
             width: 100%;
             height: 100%;
@@ -185,6 +229,9 @@
             border-radius: 25px;
             transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
             filter: brightness(1.1) contrast(1.05);
+            /* FIX: Optimize image rendering */
+            will-change: opacity, transform;
+            backface-visibility: hidden;
         }
 
         .slideshow-image.fade-in {
@@ -197,13 +244,14 @@
                 transform: scale(0.9);
                 filter: blur(10px);
             }
+
             100% {
                 opacity: 1;
                 transform: scale(1);
                 filter: blur(0px) brightness(1.1) contrast(1.05);
             }
         }
-        
+
         .no-photos {
             text-align: center;
             font-size: 2.2rem;
@@ -218,25 +266,30 @@
         }
 
         @keyframes textGlow {
-            0% { filter: brightness(1); }
-            100% { filter: brightness(1.2); }
+            0% {
+                filter: brightness(1);
+            }
+
+            100% {
+                filter: brightness(1.2);
+            }
         }
-        
+
         .no-photos h2 {
             margin-bottom: 20px;
             font-size: 1.4em;
             font-weight: 600;
         }
-        
+
         .no-photos p {
             font-size: 0.9em;
             opacity: 0.7;
             color: var(--text-secondary);
         }
 
-        /* Indicador de progreso del slideshow */
+        /* Slideshow progress indicator */
         .slideshow-progress {
-            position: absolute;
+            position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
@@ -275,20 +328,24 @@
         }
 
         @keyframes spin {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) rotate(360deg); }
+            0% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
         }
 
-        /* Responsive Design */
+        /* Responsive Design - FIX: Improved mobile calculations */
         @media screen and (max-width: 768px) {
             .slideshow-area {
                 width: 90vh;
                 height: 90vw;
-                margin-top: -45vw;
-                margin-left: -45vh;
             }
-            
-            .header-info, .photo-counter {
+
+            .header-info,
+            .photo-counter {
                 padding: 10px 15px;
                 font-size: 0.8rem;
             }
@@ -296,30 +353,28 @@
             .photo-counter .count {
                 font-size: 1.5rem;
             }
-            
+
             .no-photos {
                 font-size: 1.6rem;
                 padding: 25px;
             }
         }
-        
+
         @media screen and (min-height: 1200px) {
             .slideshow-area {
                 width: 75vh;
                 height: 75vw;
-                margin-top: -37.5vw;
-                margin-left: -37.5vh;
             }
-            
+
             .no-photos {
                 font-size: 2.8rem;
                 padding: 50px;
             }
         }
 
-        /* Estados interactivos para debugging */
+        /* Debug info for development */
         .debug-info {
-            position: absolute;
+            position: fixed;
             bottom: 20px;
             left: 20px;
             background: var(--glass-bg);
@@ -337,26 +392,48 @@
         .debug-info.visible {
             opacity: 1;
         }
+
+        /* FIX: Performance optimizations for smoother animations */
+        .slideshow-area,
+        .slideshow-image,
+        .particle {
+            transform-style: preserve-3d;
+        }
+
+        /* FIX: Reduce animation complexity for better performance */
+        @media (prefers-reduced-motion: reduce) {
+
+            .particle,
+            .slideshow-image,
+            .borderGlow {
+                animation: none;
+            }
+
+            .slideshow-image {
+                transition: opacity 0.3s ease;
+            }
+        }
     </style>
 </head>
+
 <body>
-    <!-- Partículas de fondo -->
+    <!-- Optimized particles background -->
     <div class="background-particles" id="particles"></div>
 
     <div class="container">
-        <!-- Header con información -->
+        <!-- Header with info -->
         <div class="header-info">
             <span class="status-dot"></span>
             <span id="status-text">Sistema Activo</span>
         </div>
 
-        <!-- Contador de fotos -->
+        <!-- Photo counter -->
         <div class="photo-counter">
             <span class="count" id="photo-count">0</span>
             <span class="label">Fotos</span>
         </div>
 
-        <!-- Área principal del slideshow -->
+        <!-- Main slideshow area - FIX: Now properly centered -->
         <div class="slideshow-area">
             <div class="loading-spinner" id="loading"></div>
             <div id="slideshow">
@@ -367,10 +444,10 @@
             </div>
         </div>
 
-        <!-- Indicador de progreso -->
+        <!-- Progress indicator -->
         <div class="slideshow-progress" id="progress-indicator"></div>
-        
-        <!-- Info de debug (opcional) -->
+
+        <!-- Debug info (optional) -->
         <div class="debug-info" id="debug-info">
             <div>Última actualización: <span id="last-update">--:--:--</span></div>
             <div>Imágenes en cola: <span id="queue-count">0</span></div>
@@ -384,7 +461,8 @@
                 this.currentImages = [];
                 this.currentIndex = 0;
                 this.isDebugMode = false;
-                
+                this.particleCount = 15; // FIX: Reduced particle count for performance
+
                 this.elements = {
                     slideshow: document.getElementById('slideshow'),
                     photoCount: document.getElementById('photo-count'),
@@ -403,33 +481,33 @@
                 this.createParticles();
                 this.checkForNewImages();
                 this.setupEventListeners();
-                
+
                 // Check for images every 2 seconds
                 setInterval(() => this.checkForNewImages(), 2000);
             }
 
             createParticles() {
                 const particlesContainer = document.getElementById('particles');
-                const particleCount = 20;
 
-                for (let i = 0; i < particleCount; i++) {
+                // FIX: Reduced particle count for better performance
+                for (let i = 0; i < this.particleCount; i++) {
                     const particle = document.createElement('div');
                     particle.className = 'particle';
-                    
-                    // Posición aleatoria
+
+                    // Random position
                     particle.style.left = Math.random() * 100 + '%';
                     particle.style.top = Math.random() * 100 + '%';
-                    
-                    // Delay de animación aleatorio
+
+                    // Random animation delay and duration
                     particle.style.animationDelay = Math.random() * 6 + 's';
                     particle.style.animationDuration = (3 + Math.random() * 4) + 's';
-                    
+
                     particlesContainer.appendChild(particle);
                 }
             }
 
             setupEventListeners() {
-                // Doble click para toggle debug mode
+                // Double click for debug mode
                 document.addEventListener('dblclick', () => {
                     this.isDebugMode = !this.isDebugMode;
                     this.elements.debugInfo.classList.toggle('visible', this.isDebugMode);
@@ -437,7 +515,7 @@
 
                 // Keyboard shortcuts
                 document.addEventListener('keydown', (e) => {
-                    switch(e.key) {
+                    switch (e.key) {
                         case 'ArrowRight':
                             this.nextImage();
                             break;
@@ -457,14 +535,14 @@
                     this.showLoading(true);
                     const response = await fetch('/api/next_image');
                     const data = await response.json();
-                    
+
                     if (data.image) {
                         this.displayImage(data);
                         this.updateProgressIndicator();
                     } else {
                         this.showNoPhotos();
                     }
-                    
+
                     this.updateDebugInfo();
                 } catch (error) {
                     console.error('Error loading image:', error);
@@ -479,13 +557,13 @@
                 img.src = data.image;
                 img.alt = 'Shared memory';
                 img.className = 'slideshow-image fade-in';
-                
-                // Preload image
+
+                // Preload image for smooth display
                 img.onload = () => {
                     this.elements.slideshow.innerHTML = '';
                     this.elements.slideshow.appendChild(img);
                 };
-                
+
                 img.onerror = () => {
                     console.error('Error loading image:', data.image);
                     this.showNoPhotos();
@@ -511,9 +589,10 @@
                     return;
                 }
 
-                const dots = Array.from({length: Math.min(this.currentImages.length, 5)}, (_, i) => {
+                const maxDots = Math.min(this.currentImages.length, 5);
+                const dots = Array.from({ length: maxDots }, (_, i) => {
                     const dot = document.createElement('div');
-                    dot.className = `progress-dot ${i === this.currentIndex % 5 ? 'active' : ''}`;
+                    dot.className = `progress-dot ${i === this.currentIndex % maxDots ? 'active' : ''}`;
                     return dot.outerHTML;
                 }).join('');
 
@@ -524,14 +603,14 @@
                 try {
                     const response = await fetch('/api/images');
                     const data = await response.json();
-                    
-                    // Actualizar contador
+
+                    // Update counter
                     this.elements.photoCount.textContent = data.count;
-                    
+
                     if (data.count !== this.currentImages.length) {
                         this.currentImages = data.images;
                         this.elements.statusText.textContent = 'Nuevas fotos detectadas';
-                        
+
                         if (data.count > 0 && !this.slideInterval) {
                             this.startSlideshow();
                         } else if (data.count === 0 && this.slideInterval) {
@@ -548,7 +627,7 @@
 
             startSlideshow() {
                 if (this.slideInterval) return;
-                
+
                 this.loadNextImage();
                 this.slideInterval = setInterval(() => this.loadNextImage(), 5000);
                 this.elements.statusText.textContent = 'Slideshow Activo';
@@ -578,13 +657,13 @@
             }
 
             prevImage() {
-                // Esta funcionalidad requeriría modificar la API del backend
-                console.log('Previous image functionality would require backend API changes');
+                // This functionality would require backend API changes
+                console.log('Previous image functionality requires backend API changes');
             }
 
             updateDebugInfo() {
                 if (!this.isDebugMode) return;
-                
+
                 const now = new Date();
                 this.elements.lastUpdate.textContent = now.toLocaleTimeString();
                 this.elements.queueCount.textContent = this.currentImages.length;
@@ -597,4 +676,5 @@
         });
     </script>
 </body>
+
 </html>
