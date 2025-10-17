@@ -159,7 +159,7 @@ def display():
         logger.info(f"🌐 Server accessible at: http://{local_ip}:5000")
         logger.info(f"📱 Upload URL for QR: {upload_url}")
         
-        return render_template('display_fixed.html', qr_path=qr_path, upload_url=upload_url)
+        return render_template('display.html', qr_path=qr_path, upload_url=upload_url)
     except Exception as e:
         logger.error(f"Error in display route: {e}")
         return f"Error: {str(e)}", 500
@@ -173,7 +173,7 @@ def qr():
         upload_url = f"http://{local_ip}:5000/upload"
         qr_path = generate_qr_code(upload_url)
         
-        return render_template('qr_fixed.html', qr_path=qr_path, upload_url=upload_url)
+        return render_template('qr.html', qr_path=qr_path, upload_url=upload_url)
     except Exception as e:
         logger.error(f"Error in qr route: {e}")
         return f"Error: {str(e)}", 500
@@ -182,7 +182,7 @@ def qr():
 def upload_page():
     """Upload page for guests"""
     try:
-        return render_template('upload_fixed.html')
+        return render_template('upload.html')
     except Exception as e:
         logger.error(f"Error in upload_page route: {e}")
         return f"Error: {str(e)}", 500

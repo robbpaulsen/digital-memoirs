@@ -210,4 +210,16 @@
 3. **Realizar testing de carga con 700-900 imágenes**
 4. **Considerar asignación de nombres de dominio amigables** (punto de prioridad media)
 
-Los archivos están listos para implementación inmediata. Cada corrección ha sido documentada y probada conceptualmente.
+## 🔧 **Corregir en `app.py` las referencias de:**
+
+- *display_fixed.html*
+- *qr_fixed.html*
+- *upload_fixed.html*
+
+La referenciacion correcta es sin `_fixed`
+
+```python
+✅ return render_template('qr.html', BLAH_PATH=BLAH_PATH, BLAH_URL=BLAH_URL)
+
+👎🏽 return render_template('qr_fixed.html', BLAH_PATH=BLAH_PATH, BLAH_URL=BLAH_URL)
+```
