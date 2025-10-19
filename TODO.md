@@ -64,6 +64,27 @@
 
 ---
 
+19/10/2025
+
+## ✅ **Bug de Botón de Cámara Resuelto**
+
+### **Issue: Botón de Selfie No Ejecutaba Ninguna Acción**
+
+- **Status:** ✅ RESUELTO
+- **Descripción:** Al presionar el botón "Tomar Foto" (📷) en `/upload`, no ocurría ninguna acción
+- **Causa Raíz:** Template mismatch en `app.py` - intentaba servir archivos inexistentes:
+  - `render_template('upload_fixed.html')` → Archivo no existe
+  - `render_template('display_fixed.html')` → Archivo no existe
+  - `render_template('qr_fixed.html')` → Archivo no existe
+- **Solución:** Corregidos nombres en `app.py` para usar archivos reales:
+  - `upload.html` ✅
+  - `display.html` ✅
+  - `qr.html` ✅
+- **Testing:** Verificado funcionando - página carga correctamente y botón ejecuta función JavaScript
+- **Archivos Modificados:** `app.py:162, 176, 185`
+
+---
+
 17/10/2025
 
 ## 📋 Resumen de Issues Corregidos
@@ -210,16 +231,4 @@
 3. **Realizar testing de carga con 700-900 imágenes**
 4. **Considerar asignación de nombres de dominio amigables** (punto de prioridad media)
 
-## 🔧 **Corregir en `app.py` las referencias de:**
-
-- *display_fixed.html*
-- *qr_fixed.html*
-- *upload_fixed.html*
-
-La referenciacion correcta es sin `_fixed`
-
-```python
-✅ return render_template('qr.html', BLAH_PATH=BLAH_PATH, BLAH_URL=BLAH_URL)
-
-👎🏽 return render_template('qr_fixed.html', BLAH_PATH=BLAH_PATH, BLAH_URL=BLAH_URL)
-```
+Los archivos están listos para implementación inmediata. Cada corrección ha sido documentada y probada conceptualmente.

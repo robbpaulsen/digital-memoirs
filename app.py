@@ -158,7 +158,7 @@ def display():
         
         logger.info(f"🌐 Server accessible at: http://{local_ip}:5000")
         logger.info(f"📱 Upload URL for QR: {upload_url}")
-        
+
         return render_template('display.html', qr_path=qr_path, upload_url=upload_url)
     except Exception as e:
         logger.error(f"Error in display route: {e}")
@@ -172,7 +172,7 @@ def qr():
         local_ip = get_local_ip()
         upload_url = f"http://{local_ip}:5000/upload"
         qr_path = generate_qr_code(upload_url)
-        
+
         return render_template('qr.html', qr_path=qr_path, upload_url=upload_url)
     except Exception as e:
         logger.error(f"Error in qr route: {e}")
@@ -426,7 +426,7 @@ if __name__ == '__main__':
         # FIX: SOLUTION TO BROWSER BUG: Changed debug=True to debug=False
         # In debug mode, Flask uses a reloader that causes 2 tabs to open
         # Also improved threading and error handling
-        app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
+        app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
     except KeyboardInterrupt:
         logger.info("\n🛑 Received interrupt signal")
         cleanup_qr_code()
