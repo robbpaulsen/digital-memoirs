@@ -130,50 +130,77 @@ def update_image_list():
     except Exception as e:
         logger.error(f"Error updating image list: {e}")
 
-def generate_qr_code(url):
-    """Generate QR code for the upload URL"""
+def generate_wifi_qr(ssid="MomentoMarco", password="MarcoMomento2025", security="WPA"):
+    """
+    Generate QR code for WiFi connection with captive portal redirect
+
+    Args:
+        ssid: WiFi network name
+        password: WiFi password
+        security: Security type (WPA, WEP, or blank for open network)
+
+    Returns:
+        Path to generated QR code image
+    """
     try:
+        # WiFi QR code format: WIFI:T:WPA;S:ssid;P:password;;
+        # This format is recognized by iOS and Android to auto-connect
+        wifi_config = f"WIFI:T:{security};S:{ssid};P:{password};;"
+
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        qr.add_data(url)
+        qr.add_data(wifi_config)
         qr.make(fit=True)
-        
+
         qr_img = qr.make_image(fill_color="navy", back_color="white")
         qr_path = "static/qr_code.png"
         os.makedirs("static", exist_ok=True)
         qr_img.save(qr_path)
+
+        logger.info(f"📱 WiFi QR generated: SSID={ssid}, Security={security}")
         return qr_path
     except Exception as e:
-        logger.error(f"Error generating QR code: {e}")
+        logger.error(f"Error generating WiFi QR code: {e}")
         return None
 
 @app.route('/')
 @app.route('/display')
 def display():
-    """Main display screen with QR code and slideshow"""
+    """Main display screen with WiFi QR code and slideshow"""
     try:
-        # Get local IP and generate QR code for upload URL
+        # Get local IP for logging
         local_ip = get_local_ip()
-        upload_url = f"http://{local_ip}:5000/upload"
-        qr_path = generate_qr_code(upload_url)
-        
-        logger.info(f"🌐 Server accessible at: http://{local_ip}:5000")
-        logger.info(f"📱 Upload URL for QR: {upload_url}")
 
-        return render_template('display.html', qr_path=qr_path, upload_url=upload_url)
+        # Generate WiFi QR code (users will auto-connect and get redirected via captive portal)
+        qr_path = generate_wifi_qr()
+
+        # Info for display template
+        wifi_ssid = "MomentoMarco"
+        upload_url = f"http://{local_ip}:5000/upload"
+
+        logger.info(f"🌐 Server accessible at: http://{local_ip}:5000")
+        logger.info(f"📱 WiFi SSID: {wifi_ssid}")
+        logger.info(f"📱 Upload URL: {upload_url}")
+
+        return render_template('display.html', qr_path=qr_path, upload_url=upload_url, wifi_ssid=wifi_ssid)
     except Exception as e:
         logger.error(f"Error in display route: {e}")
         return f"Error: {str(e)}", 500
 
 @app.route('/qr')
 def qr():
-    """QR code only page - cleaner for guests to read"""
+    """WiFi QR code only page - cleaner for guests to scan"""
     try:
-        # Get local IP and generate QR code for upload URL
+        # Get local IP for logging
         local_ip = get_local_ip()
-        upload_url = f"http://{local_ip}:5000/upload"
-        qr_path = generate_qr_code(upload_url)
 
-        return render_template('qr.html', qr_path=qr_path, upload_url=upload_url)
+        # Generate WiFi QR code
+        qr_path = generate_wifi_qr()
+
+        # Info for QR template
+        wifi_ssid = "MomentoMarco"
+        upload_url = f"http://{local_ip}:5000/upload"
+
+        return render_template('qr.html', qr_path=qr_path, upload_url=upload_url, wifi_ssid=wifi_ssid)
     except Exception as e:
         logger.error(f"Error in qr route: {e}")
         return f"Error: {str(e)}", 500
@@ -351,7 +378,7 @@ def status():
     try:
         with slideshow_lock:
             image_count = len(current_images)
-        
+
         return jsonify({
             'status': 'healthy',
             'image_count': image_count,
@@ -361,6 +388,32 @@ def status():
     except Exception as e:
         logger.error(f"Error in status: {e}")
         return jsonify({'status': 'error', 'error': str(e)}), 500
+
+# ============================================================
+# CAPTIVE PORTAL DETECTION ENDPOINTS
+# ============================================================
+# These endpoints intercept OS-level captive portal checks
+# and redirect users to the upload page automatically
+
+@app.route('/hotspot-detect.html')
+@app.route('/library/test/success.html')
+def ios_captive_portal():
+    """iOS captive portal detection - redirects to upload page"""
+    logger.info("🍎 iOS captive portal detected - redirecting to /upload")
+    return redirect('/upload', code=302)
+
+@app.route('/generate_204')
+def android_captive_portal():
+    """Android captive portal detection - redirects to upload page"""
+    logger.info("🤖 Android captive portal detected - redirecting to /upload")
+    return redirect('/upload', code=302)
+
+@app.route('/connecttest.txt')
+@app.route('/ncsi.txt')
+def windows_captive_portal():
+    """Windows captive portal detection - redirects to upload page"""
+    logger.info("🪟 Windows captive portal detected - redirecting to /upload")
+    return redirect('/upload', code=302)
 
 def setup_file_watcher():
     """Setup file system watcher for uploads directory"""

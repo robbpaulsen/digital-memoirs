@@ -481,7 +481,10 @@
         <div class="container-content">
             <div class="header">
                 <h1>📸 Comparte Fotos!</h1>
-                <p>¡Ayúdanos a capturar todos los momentos increíbles!</p>
+                <p>¡Conecta y comparte todos los momentos increíbles!</p>
+                <p style="font-size: 0.9em; margin-top: 10px; color: var(--accent-cyan);">
+                    WiFi: {{ wifi_ssid }} | Conexión automática
+                </p>
             </div>
 
             <div class="qr-section">
@@ -493,7 +496,7 @@
             </div>
 
             <div class="instructions">
-                <h2>🚀 ¿Cómo Compartir?</h2>
+                <h2>🚀 ¿Cómo Conectar y Compartir?</h2>
 
                 <div class="step">
                     <div class="step-number">1</div>
@@ -502,12 +505,12 @@
 
                 <div class="step">
                     <div class="step-number">2</div>
-                    <div class="step-text">Apunta hacia el código QR de arriba</div>
+                    <div class="step-text">Escanea el código QR - Te conectarás al WiFi automáticamente</div>
                 </div>
 
                 <div class="step">
                     <div class="step-number">3</div>
-                    <div class="step-text">Toca la notificación que aparece</div>
+                    <div class="step-text">Espera la notificación "Iniciar sesión en red" y tócala</div>
                 </div>
 
                 <div class="step">
@@ -516,7 +519,7 @@
                 </div>
 
                 <div class="url-display">
-                    <div class="label">O accede directamente:</div>
+                    <div class="label">Si ya estás conectado al WiFi "{{ wifi_ssid }}":</div>
                     <div class="url" id="upload-url" onclick="copyUrl()">{{ upload_url }}</div>
                     <button class="copy-btn" onclick="copyUrl()">📋 Copiar Enlace</button>
                 </div>

@@ -445,7 +445,10 @@
             <div id="slideshow">
                 <div class="no-photos">
                     <h2>🎉 ¡Comparte tus Recuerdos!</h2>
-                    <p>Escanea el código QR para subir fotos</p>
+                    <p>Escanea el QR para conectarte y compartir fotos</p>
+                    <p style="font-size: 0.8em; color: var(--text-secondary); margin-top: 8px;">
+                        WiFi: {{ wifi_ssid }} | Conexión automática
+                    </p>
                 </div>
             </div>
         </div>
@@ -580,7 +583,10 @@
                 this.elements.slideshow.innerHTML = `
                     <div class="no-photos">
                         <h2>🎉 ¡Comparte tus Recuerdos!</h2>
-                        <p>Escanea el código QR para subir fotos</p>
+                        <p>Escanea el QR para conectarte y compartir fotos</p>
+                        <p style="font-size: 0.8em; color: var(--text-secondary); margin-top: 8px;">
+                            WiFi: {{ wifi_ssid }} | Conexión automática
+                        </p>
                     </div>
                 `;
             }

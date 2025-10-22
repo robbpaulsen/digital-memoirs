@@ -1,13 +1,14 @@
 <!-- templates/upload.html - VERSIÓN CORREGIDA -->
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compartir Recuerdos</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
-        
+
         :root {
             --dark-bg-primary: #0a0a0f;
             --dark-bg-secondary: #1a1a2e;
@@ -31,11 +32,11 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
             background: var(--dark-bg-primary);
-            background-image: 
+            background-image:
                 radial-gradient(circle at 25% 25%, var(--dark-bg-tertiary) 0%, transparent 50%),
                 radial-gradient(circle at 75% 75%, var(--dark-bg-secondary) 0%, transparent 50%);
             min-height: 100vh;
@@ -84,16 +85,23 @@
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-30px) scale(1.1); }
+
+            0%,
+            100% {
+                transform: translateY(0px) scale(1);
+            }
+
+            50% {
+                transform: translateY(-30px) scale(1.1);
+            }
         }
-        
+
         .upload-container {
             background: var(--glass-bg);
             backdrop-filter: blur(25px);
             border: 1px solid var(--glass-border);
             border-radius: 30px;
-            box-shadow: 
+            box-shadow:
                 0 25px 50px rgba(0, 0, 0, 0.5),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
             max-width: 520px;
@@ -120,8 +128,15 @@
         }
 
         @keyframes borderPulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
+
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
         }
 
         .container-content {
@@ -152,11 +167,11 @@
             color: var(--error-color);
             border-color: rgba(239, 68, 68, 0.3);
         }
-        
+
         .header {
             margin-bottom: 35px;
         }
-        
+
         .header h1 {
             background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
             background-clip: text;
@@ -167,7 +182,7 @@
             font-weight: 600;
             text-shadow: var(--shadow-glow);
         }
-        
+
         .header p {
             color: var(--text-secondary);
             font-size: 1.1em;
@@ -181,7 +196,7 @@
             margin-bottom: 25px;
             flex-wrap: wrap;
         }
-        
+
         .upload-area {
             border: 2px dashed var(--glass-border);
             border-radius: 25px;
@@ -205,7 +220,7 @@
             background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.1), transparent);
             transition: left 0.5s ease;
         }
-        
+
         .upload-area:hover {
             border-color: var(--accent-cyan);
             background: rgba(0, 245, 255, 0.05);
@@ -216,7 +231,7 @@
         .upload-area:hover::before {
             left: 100%;
         }
-        
+
         .upload-area.dragover {
             border-color: var(--accent-purple);
             background: rgba(139, 92, 246, 0.1);
@@ -259,7 +274,35 @@
         .camera-area:hover::before {
             left: 100%;
         }
-        
+
+        /* FIX: Camera disabled state */
+        .camera-area.camera-disabled {
+            border-color: rgba(148, 163, 184, 0.3);
+            background: rgba(148, 163, 184, 0.05);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .camera-area.camera-disabled:hover {
+            border-color: rgba(148, 163, 184, 0.4);
+            background: rgba(148, 163, 184, 0.08);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .camera-area.camera-disabled::before {
+            display: none;
+        }
+
+        .camera-area.camera-disabled .camera-icon {
+            filter: grayscale(1) opacity(0.5);
+        }
+
+        .camera-area.camera-disabled .camera-text,
+        .camera-area.camera-disabled .camera-subtext {
+            opacity: 0.7;
+        }
+
         .upload-icon {
             font-size: 3em;
             margin-bottom: 15px;
@@ -271,20 +314,22 @@
             margin-bottom: 15px;
             filter: drop-shadow(0 0 10px var(--accent-green));
         }
-        
-        .upload-text, .camera-text {
+
+        .upload-text,
+        .camera-text {
             color: var(--text-primary);
             font-size: 1.2em;
             margin-bottom: 8px;
             font-weight: 500;
         }
-        
-        .upload-subtext, .camera-subtext {
+
+        .upload-subtext,
+        .camera-subtext {
             color: var(--text-secondary);
             font-size: 0.9em;
             font-weight: 400;
         }
-        
+
         #file-input {
             display: none;
         }
@@ -358,7 +403,7 @@
             transform: none;
             box-shadow: none;
         }
-        
+
         .selected-files {
             margin: 25px 0;
             text-align: left;
@@ -371,7 +416,7 @@
             margin-bottom: 15px;
             font-weight: 500;
         }
-        
+
         .file-list {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--glass-border);
@@ -395,7 +440,7 @@
             background: var(--accent-cyan);
             border-radius: 3px;
         }
-        
+
         .file-item {
             display: flex;
             align-items: center;
@@ -410,12 +455,13 @@
                 opacity: 0;
                 transform: translateX(-20px);
             }
+
             100% {
                 opacity: 1;
                 transform: translateX(0);
             }
         }
-        
+
         .file-item:last-child {
             border-bottom: none;
         }
@@ -431,14 +477,14 @@
             margin-right: 10px;
             color: var(--accent-cyan);
         }
-        
+
         .file-name {
             color: var(--text-primary);
             font-size: 0.9em;
             word-break: break-word;
             font-weight: 400;
         }
-        
+
         .file-size {
             color: var(--text-secondary);
             font-size: 0.8em;
@@ -446,7 +492,7 @@
             margin-left: 15px;
             font-weight: 300;
         }
-        
+
         .upload-btn {
             background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
             color: var(--dark-bg-primary);
@@ -476,7 +522,7 @@
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.5s ease;
         }
-        
+
         .upload-btn:hover:not(:disabled) {
             transform: translateY(-3px);
             box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
@@ -485,7 +531,7 @@
         .upload-btn:hover:not(:disabled)::before {
             left: 100%;
         }
-        
+
         .upload-btn:disabled {
             background: rgba(148, 163, 184, 0.2);
             color: var(--text-secondary);
@@ -497,7 +543,7 @@
         .upload-btn:active:not(:disabled) {
             transform: translateY(-1px);
         }
-        
+
         .progress-bar {
             width: 100%;
             height: 8px;
@@ -507,7 +553,7 @@
             overflow: hidden;
             display: none;
         }
-        
+
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple), var(--accent-pink));
@@ -529,10 +575,15 @@
         }
 
         @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
         }
-        
+
         .message {
             padding: 18px 25px;
             border-radius: 20px;
@@ -548,18 +599,19 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             100% {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
+
         .message.success {
             background: rgba(16, 185, 129, 0.1);
             color: var(--success-color);
             border-color: rgba(16, 185, 129, 0.3);
         }
-        
+
         .message.error {
             background: rgba(239, 68, 68, 0.1);
             color: var(--error-color);
@@ -588,12 +640,14 @@
                 flex-direction: column;
             }
 
-            .upload-area, .camera-area {
+            .upload-area,
+            .camera-area {
                 padding: 30px 20px;
                 min-width: auto;
             }
 
-            .upload-icon, .camera-icon {
+            .upload-icon,
+            .camera-icon {
                 font-size: 2.5em;
             }
         }
@@ -607,12 +661,15 @@
 
         /* High-resolution displays */
         @media (min-resolution: 192dpi) {
-            .upload-icon, .camera-icon {
+
+            .upload-icon,
+            .camera-icon {
                 filter: drop-shadow(0 0 15px var(--accent-cyan));
             }
         }
     </style>
 </head>
+
 <body>
     <!-- Background decorations -->
     <div class="bg-decoration"></div>
@@ -637,14 +694,15 @@
                     <div class="upload-text">Seleccionar Fotos</div>
                     <div class="upload-subtext">desde galería</div>
                 </div>
-                
-                <div class="camera-area" onclick="toggleCamera()">
+
+                <!-- FIX: Camera disabled - requires HTTPS in modern browsers -->
+                <div class="camera-area camera-disabled" onclick="showCameraDisabledMessage()">
                     <div class="camera-icon">📷</div>
                     <div class="camera-text">Tomar Foto</div>
-                    <div class="camera-subtext">usar cámara</div>
+                    <div class="camera-subtext">⚠️ no disponible</div>
                 </div>
             </div>
-            
+
             <input type="file" id="file-input" multiple accept="image/*,image/heic,image/heif">
 
             <!-- FIX: Camera controls with loop prevention -->
@@ -655,20 +713,20 @@
                     <button class="btn danger" id="close-camera-btn" onclick="closeCamera()">❌ Cerrar</button>
                 </div>
             </div>
-            
+
             <div class="selected-files" id="selected-files">
                 <h3>📋 Fotos seleccionadas:</h3>
                 <div class="file-list" id="file-list"></div>
             </div>
-            
+
             <button class="upload-btn" id="upload-btn" disabled onclick="uploadFiles()">
                 <span id="btn-text">Subir Fotos</span>
             </button>
-            
+
             <div class="progress-bar" id="progress-bar">
                 <div class="progress-fill" id="progress-fill"></div>
             </div>
-            
+
             <div class="message" id="message"></div>
         </div>
     </div>
@@ -681,8 +739,6 @@
                 this.cameraStream = null;
                 this.isCameraOpen = false;
                 this.cameraCloseTimeout = null; // FIX: Prevent camera loop
-                this.isClosingCamera = false;   // FIX: Prevent race condition
-                this.lastCameraClose = 0;       // FIX: Timestamp para debounce
 
                 this.elements = {
                     fileInput: document.getElementById('file-input'),
@@ -705,24 +761,81 @@
             }
 
             init() {
+                // FIX: Setup polyfill for older getUserMedia API (works on HTTP)
+                this.setupMediaDevicesPolyfill();
                 this.checkConnection();
                 this.setupEventListeners();
+            }
+
+            // FIX: Comprehensive polyfill for getUserMedia across all browsers and contexts
+            setupMediaDevicesPolyfill() {
+                console.log('🔧 Setting up MediaDevices polyfill...');
+                console.log('📍 Current navigator.mediaDevices:', navigator.mediaDevices);
+
+                // Check if modern API already exists
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    console.log('✅ Modern MediaDevices API available');
+                    return;
+                }
+
+                console.log('⚠️ Modern API not available, attempting polyfill...');
+
+                // First, try to find ANY available getUserMedia implementation
+                const getUserMedia = navigator.getUserMedia ||
+                                    navigator.webkitGetUserMedia ||
+                                    navigator.mozGetUserMedia ||
+                                    navigator.msGetUserMedia ||
+                                    (navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+                console.log('🔍 Available getUserMedia methods:', {
+                    'navigator.getUserMedia': !!navigator.getUserMedia,
+                    'navigator.webkitGetUserMedia': !!navigator.webkitGetUserMedia,
+                    'navigator.mozGetUserMedia': !!navigator.mozGetUserMedia,
+                    'navigator.msGetUserMedia': !!navigator.msGetUserMedia,
+                    'navigator.mediaDevices?.getUserMedia': !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+                });
+
+                if (!getUserMedia) {
+                    console.error('❌ No getUserMedia API available in any form');
+                    return;
+                }
+
+                console.log('✅ Found getUserMedia implementation, creating polyfill...');
+
+                // Create mediaDevices object if it doesn't exist
+                if (!navigator.mediaDevices) {
+                    console.log('📝 Creating navigator.mediaDevices object');
+                    navigator.mediaDevices = {};
+                }
+
+                // Add getUserMedia as a Promise-based wrapper
+                if (!navigator.mediaDevices.getUserMedia) {
+                    console.log('📝 Adding getUserMedia to navigator.mediaDevices');
+                    navigator.mediaDevices.getUserMedia = function(constraints) {
+                        return new Promise((resolve, reject) => {
+                            getUserMedia.call(navigator, constraints, resolve, reject);
+                        });
+                    };
+                    console.log('✅ Polyfill successfully installed');
+                } else {
+                    console.log('✅ getUserMedia already exists');
+                }
             }
 
             setupEventListeners() {
                 // File input change
                 this.elements.fileInput.addEventListener('change', (e) => this.handleFiles(e));
-                
+
                 // Drag and drop for upload area only
                 this.elements.uploadArea.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     this.elements.uploadArea.classList.add('dragover');
                 });
-                
+
                 this.elements.uploadArea.addEventListener('dragleave', () => {
                     this.elements.uploadArea.classList.remove('dragover');
                 });
-                
+
                 this.elements.uploadArea.addEventListener('drop', (e) => {
                     e.preventDefault();
                     this.elements.uploadArea.classList.remove('dragover');
@@ -779,26 +892,22 @@
                 }
             }
 
-            // FIX: File selection function with debounce protection
+            // FIX: File selection function
             selectFiles() {
-                const now = Date.now();
-
-                // FIX: Prevenir apertura si cerramos cámara recientemente
-                if (now - this.lastCameraClose < 150) {
-                    console.log('🚫 Bloqueando apertura galería - cámara cerrada recientemente');
-                    return;
-                }
-
                 if (this.isCameraOpen) {
-                    console.log('⚠️ Cámara abierta, cerrando antes de abrir galería');
                     this.closeCamera();
                 }
-
                 this.elements.fileInput.click();
             }
 
-            // FIX: Camera functions with loop prevention
+            // FIX: Camera functions with loop prevention and detailed debugging
             async toggleCamera() {
+                // DEBUG: Log environment
+                console.log('🎥 toggleCamera called');
+                console.log('📍 Protocol:', window.location.protocol);
+                console.log('📍 Hostname:', window.location.hostname);
+                console.log('📍 isCameraOpen:', this.isCameraOpen);
+
                 if (this.isCameraOpen) {
                     this.closeCamera();
                     return;
@@ -810,55 +919,101 @@
                     this.cameraCloseTimeout = null;
                 }
 
+                // FIX: Check if navigator exists
+                if (!navigator) {
+                    console.error('❌ navigator object not available');
+                    this.showMessage('❌ Navegador no soportado', 'error');
+                    return;
+                }
+
+                // FIX: Check if mediaDevices exists (after polyfill attempt)
+                console.log('🔍 navigator.mediaDevices:', navigator.mediaDevices);
+                if (!navigator.mediaDevices) {
+                    console.error('❌ navigator.mediaDevices is undefined');
+                    this.showMessage('⚠️ Cámara no disponible. Tu navegador no soporta acceso a cámara. Por favor usa "Seleccionar Fotos" 📁 para subir imágenes desde tu galería.', 'error');
+                    return;
+                }
+
+                // FIX: Check if getUserMedia exists (after polyfill attempt)
+                console.log('🔍 navigator.mediaDevices.getUserMedia:', navigator.mediaDevices.getUserMedia);
+                if (!navigator.mediaDevices.getUserMedia) {
+                    console.error('❌ getUserMedia not available (polyfill failed)');
+                    this.showMessage('⚠️ Función de cámara no disponible en este navegador. Por favor usa "Seleccionar Fotos" 📁 para subir desde tu galería.', 'error');
+                    return;
+                }
+
+                console.log('✅ All API checks passed, attempting camera access...');
+
                 try {
+                    console.log('📷 Trying back camera (environment)...');
                     // Try back camera first (mobile)
-                    this.cameraStream = await navigator.mediaDevices.getUserMedia({ 
-                        video: { 
+                    this.cameraStream = await navigator.mediaDevices.getUserMedia({
+                        video: {
                             facingMode: 'environment',
                             width: { ideal: 1280 },
                             height: { ideal: 720 }
-                        } 
+                        }
                     });
-                    
+
+                    console.log('✅ Back camera access granted');
                     this.elements.cameraVideo.srcObject = this.cameraStream;
                     this.elements.cameraControls.style.display = 'block';
                     this.isCameraOpen = true;
-                    
+
                 } catch (error) {
-                    console.error('Error accessing back camera:', error);
-                    
+                    console.error('❌ Error accessing back camera:', error);
+                    console.error('Error name:', error.name);
+                    console.error('Error message:', error.message);
+
                     // Try front camera as fallback
                     try {
-                        this.cameraStream = await navigator.mediaDevices.getUserMedia({ 
-                            video: { 
+                        console.log('📷 Trying front camera (user)...');
+                        this.cameraStream = await navigator.mediaDevices.getUserMedia({
+                            video: {
                                 facingMode: 'user',
                                 width: { ideal: 1280 },
                                 height: { ideal: 720 }
-                            } 
+                            }
                         });
-                        
+
+                        console.log('✅ Front camera access granted');
                         this.elements.cameraVideo.srcObject = this.cameraStream;
                         this.elements.cameraControls.style.display = 'block';
                         this.isCameraOpen = true;
-                        
+
                     } catch (fallbackError) {
-                        console.error('Fallback camera error:', fallbackError);
-                        this.showMessage('Cámara no disponible en este dispositivo.', 'error');
+                        console.error('❌ Fallback camera error:', fallbackError);
+                        console.error('Error name:', fallbackError.name);
+                        console.error('Error message:', fallbackError.message);
+
+                        // Show user-friendly error based on error type
+                        this.showCameraError(fallbackError);
                     }
                 }
             }
 
-            closeCamera() {
-                // FIX: Prevenir ejecución múltiple (race condition)
-                if (this.isClosingCamera) {
-                    console.log('⚠️ closeCamera ya en ejecución, abortando');
-                    return;
+            showCameraError(error) {
+                let message = '❌ No se puede acceder a la cámara. ';
+
+                if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                    message += 'Por favor, permite el acceso a la cámara en la configuración de tu navegador.';
+                } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+                    message += 'No se detectó ninguna cámara en este dispositivo.';
+                } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+                    message += 'La cámara está siendo usada por otra aplicación.';
+                } else if (error.name === 'OverconstrainedError' || error.name === 'ConstraintNotSatisfiedError') {
+                    message += 'La cámara no cumple con los requisitos técnicos.';
+                } else if (error.name === 'SecurityError') {
+                    message += 'Error de seguridad. Verifica los permisos del navegador.';
+                } else {
+                    message += `Error: ${error.message || 'Desconocido'}`;
                 }
 
-                console.log('📷 Iniciando cierre de cámara');
-                this.isClosingCamera = true;
-                this.lastCameraClose = Date.now();
+                message += ' Usa "Seleccionar Fotos" para subir desde tu galería.';
+                this.showMessage(message, 'error');
+            }
 
+            closeCamera() {
                 if (this.cameraStream) {
                     this.cameraStream.getTracks().forEach(track => {
                         track.stop();
@@ -875,12 +1030,6 @@
                     clearTimeout(this.cameraCloseTimeout);
                     this.cameraCloseTimeout = null;
                 }
-
-                // FIX: Reset flag después de delay para permitir nuevas operaciones
-                setTimeout(() => {
-                    this.isClosingCamera = false;
-                    console.log('✅ Cierre de cámara completado');
-                }, 200);
             }
 
             capturePhoto() {
@@ -888,34 +1037,34 @@
                     this.showMessage('La cámara no está activa.', 'error');
                     return;
                 }
-                
+
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
-                
+
                 canvas.width = this.elements.cameraVideo.videoWidth;
                 canvas.height = this.elements.cameraVideo.videoHeight;
-                
+
                 context.drawImage(this.elements.cameraVideo, 0, 0);
-                
+
                 canvas.toBlob((blob) => {
                     const file = new File([blob], `camera_${Date.now()}.jpg`, { type: 'image/jpeg' });
                     this.selectedFilesList.push(file);
                     this.displaySelectedFiles();
                     this.updateUploadButton();
-                    
+
                     // Close camera after successful capture
                     this.closeCamera();
-                    
+
                     this.showMessage('Foto capturada correctamente!', 'success');
                 }, 'image/jpeg', 0.8);
             }
 
             handleFiles(event) {
                 const files = Array.from(event.target.files);
-                
+
                 // Filter only images
                 const imageFiles = files.filter(file => file.type.startsWith('image/'));
-                
+
                 if (imageFiles.length !== files.length) {
                     this.showMessage('Algunos archivos no son imágenes válidas', 'error');
                 }
@@ -930,17 +1079,17 @@
                     this.elements.selectedFiles.style.display = 'none';
                     return;
                 }
-                
+
                 this.elements.selectedFiles.style.display = 'block';
                 this.elements.fileList.innerHTML = '';
-                
+
                 this.selectedFilesList.forEach((file, index) => {
                     const fileItem = document.createElement('div');
                     fileItem.className = 'file-item';
-                    
+
                     // Determine icon by file type
                     const icon = this.getFileIcon(file.type);
-                    
+
                     fileItem.innerHTML = `
                         <div class="file-info">
                             <div class="file-icon">${icon}</div>
@@ -948,7 +1097,7 @@
                         </div>
                         <div class="file-size">${this.formatFileSize(file.size)}</div>
                     `;
-                    
+
                     // Staggered entrance animation
                     fileItem.style.animationDelay = `${index * 0.1}s`;
                     this.elements.fileList.appendChild(fileItem);
@@ -964,7 +1113,7 @@
             updateUploadButton() {
                 const hasFiles = this.selectedFilesList.length > 0;
                 this.elements.uploadBtn.disabled = !hasFiles || this.isUploading;
-                
+
                 if (hasFiles && !this.isUploading) {
                     this.elements.btnText.textContent = `Subir ${this.selectedFilesList.length} foto${this.selectedFilesList.length > 1 ? 's' : ''}`;
                 } else {
@@ -988,17 +1137,17 @@
                     const proceed = confirm(`Estás subiendo ${this.selectedFilesList.length} fotos. El límite recomendado es 800. ¿Continuar?`);
                     if (!proceed) return;
                 }
-                
+
                 this.isUploading = true;
                 const formData = new FormData();
-                
+
                 this.selectedFilesList.forEach(file => {
                     formData.append('files', file);
                 });
-                
+
                 this.setUploadingState(true);
                 this.hideMessage();
-                
+
                 // Simulate progress
                 let progress = 0;
                 const progressInterval = setInterval(() => {
@@ -1006,18 +1155,18 @@
                     if (progress > 90) progress = 90;
                     this.updateProgress(progress);
                 }, 200);
-                
+
                 try {
                     const response = await fetch('/upload', {
                         method: 'POST',
                         body: formData
                     });
-                    
+
                     clearInterval(progressInterval);
                     const result = await response.json();
-                    
+
                     this.updateProgress(100);
-                    
+
                     setTimeout(() => {
                         if (response.ok) {
                             this.showMessage(result.success, 'success');
@@ -1027,7 +1176,7 @@
                         }
                         this.setUploadingState(false);
                     }, 500);
-                    
+
                 } catch (error) {
                     clearInterval(progressInterval);
                     this.showMessage('Error de conexión. Verifica tu conexión a internet.', 'error');
@@ -1039,7 +1188,7 @@
             setUploadingState(uploading) {
                 this.isUploading = uploading;
                 this.elements.uploadBtn.disabled = uploading || this.selectedFilesList.length === 0;
-                
+
                 if (uploading) {
                     this.elements.btnText.textContent = `Subiendo ${this.selectedFilesList.length} fotos...`;
                     this.elements.progressBar.style.display = 'block';
@@ -1065,7 +1214,7 @@
                 this.elements.message.textContent = text;
                 this.elements.message.className = `message ${type}`;
                 this.elements.message.style.display = 'block';
-                
+
                 if (type === 'success') {
                     setTimeout(() => {
                         this.hideMessage();
@@ -1081,6 +1230,17 @@
         // Global functions
         function selectFiles() {
             window.uploader.selectFiles();
+        }
+
+        // FIX: Camera disabled message function
+        function showCameraDisabledMessage() {
+            if (window.uploader) {
+                window.uploader.showMessage(
+                    '📷 La función de cámara no está disponible en este navegador por razones de seguridad. ' +
+                    'Por favor usa "Seleccionar Fotos" 📁 para subir imágenes desde tu galería.',
+                    'error'
+                );
+            }
         }
 
         function toggleCamera() {
@@ -1100,7 +1260,7 @@
         }
 
         // Cleanup on page unload
-        window.addEventListener('beforeunload', function() {
+        window.addEventListener('beforeunload', function () {
             if (window.uploader && window.uploader.isCameraOpen) {
                 window.uploader.closeCamera();
             }
@@ -1112,4 +1272,5 @@
         });
     </script>
 </body>
+
 </html>

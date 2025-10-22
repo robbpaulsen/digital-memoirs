@@ -410,7 +410,9 @@
         let cameraStream = null;
         let isCameraOpen = false;
         let cameraCloseTimeout = null;
-        
+        let isClosingCamera = false;   // FIX: Prevenir race condition
+        let lastCameraClose = 0;       // FIX: Timestamp para debounce
+
         // Check connection status
         function checkConnection() {
             fetch('/api/images')
@@ -433,11 +435,21 @@
         // Check connection on load
         checkConnection();
         
-        // File selection functions
+        // File selection functions with debounce protection
         function selectFiles() {
+            const now = Date.now();
+
+            // FIX: Prevenir apertura si cerramos cámara recientemente
+            if (now - lastCameraClose < 150) {
+                console.log('🚫 Bloqueando apertura galería - cámara cerrada recientemente');
+                return;
+            }
+
             if (isCameraOpen) {
+                console.log('⚠️ Cámara abierta, cerrando antes de abrir galería');
                 closeCamera();
             }
+
             fileInput.click();
         }
         
@@ -496,22 +508,38 @@
         }
         
         function closeCamera() {
+            // FIX: Prevenir ejecución múltiple (race condition)
+            if (isClosingCamera) {
+                console.log('⚠️ closeCamera ya en ejecución, abortando');
+                return;
+            }
+
+            console.log('📷 Iniciando cierre de cámara');
+            isClosingCamera = true;
+            lastCameraClose = Date.now();
+
             if (cameraStream) {
                 cameraStream.getTracks().forEach(track => {
                     track.stop();
                 });
                 cameraStream = null;
             }
-            
+
             cameraVideo.srcObject = null;
             cameraControls.style.display = 'none';
             isCameraOpen = false;
-            
+
             // Clear any pending timeout
             if (cameraCloseTimeout) {
                 clearTimeout(cameraCloseTimeout);
                 cameraCloseTimeout = null;
             }
+
+            // FIX: Reset flag después de delay para permitir nuevas operaciones
+            setTimeout(() => {
+                isClosingCamera = false;
+                console.log('✅ Cierre de cámara completado');
+            }, 200);
         }
         
         function capturePhoto() {

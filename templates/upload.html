@@ -189,25 +189,16 @@
             font-weight: 400;
         }
 
-        /* FIX: Upload options container for gallery and camera */
-        .upload-options {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-
         .upload-area {
             border: 2px dashed var(--glass-border);
             border-radius: 25px;
-            padding: 40px 20px;
+            padding: 50px 25px;
+            margin-bottom: 25px;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             background: rgba(255, 255, 255, 0.02);
             position: relative;
             overflow: hidden;
-            flex: 1;
-            min-width: 200px;
         }
 
         .upload-area::before {
@@ -239,92 +230,20 @@
             box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
         }
 
-        /* FIX: Camera area styling */
-        .camera-area {
-            border: 2px dashed var(--accent-green);
-            border-radius: 25px;
-            padding: 40px 20px;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            background: rgba(16, 185, 129, 0.05);
-            position: relative;
-            overflow: hidden;
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .camera-area::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.1), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .camera-area:hover {
-            border-color: var(--accent-green);
-            background: rgba(16, 185, 129, 0.1);
-            transform: translateY(-2px);
-            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.2);
-        }
-
-        .camera-area:hover::before {
-            left: 100%;
-        }
-
-        /* FIX: Camera disabled state */
-        .camera-area.camera-disabled {
-            border-color: rgba(148, 163, 184, 0.3);
-            background: rgba(148, 163, 184, 0.05);
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .camera-area.camera-disabled:hover {
-            border-color: rgba(148, 163, 184, 0.4);
-            background: rgba(148, 163, 184, 0.08);
-            transform: none;
-            box-shadow: none;
-        }
-
-        .camera-area.camera-disabled::before {
-            display: none;
-        }
-
-        .camera-area.camera-disabled .camera-icon {
-            filter: grayscale(1) opacity(0.5);
-        }
-
-        .camera-area.camera-disabled .camera-text,
-        .camera-area.camera-disabled .camera-subtext {
-            opacity: 0.7;
-        }
-
         .upload-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
+            font-size: 3.5em;
+            margin-bottom: 20px;
             filter: drop-shadow(0 0 10px var(--accent-cyan));
         }
 
-        .camera-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
-            filter: drop-shadow(0 0 10px var(--accent-green));
-        }
-
-        .upload-text,
-        .camera-text {
+        .upload-text {
             color: var(--text-primary);
-            font-size: 1.2em;
-            margin-bottom: 8px;
+            font-size: 1.3em;
+            margin-bottom: 12px;
             font-weight: 500;
         }
 
-        .upload-subtext,
-        .camera-subtext {
+        .upload-subtext {
             color: var(--text-secondary);
             font-size: 0.9em;
             font-weight: 400;
@@ -332,76 +251,6 @@
 
         #file-input {
             display: none;
-        }
-
-        /* FIX: Camera controls with loop prevention */
-        .camera-controls {
-            display: none;
-            margin: 25px 0;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 20px;
-        }
-
-        .camera-video {
-            width: 100%;
-            max-width: 300px;
-            height: 200px;
-            border-radius: 15px;
-            background: var(--dark-bg-secondary);
-            object-fit: cover;
-            margin-bottom: 15px;
-            border: 2px solid var(--glass-border);
-        }
-
-        .camera-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
-            color: var(--dark-bg-primary);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 15px;
-            font-size: 0.95em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            font-family: inherit;
-        }
-
-        .btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 245, 255, 0.4);
-        }
-
-        .btn.success {
-            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
-        }
-
-        .btn.success:hover:not(:disabled) {
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-        }
-
-        .btn.danger {
-            background: linear-gradient(135deg, var(--error-color), #dc2626);
-        }
-
-        .btn.danger:hover:not(:disabled) {
-            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
-        }
-
-        .btn:disabled {
-            background: var(--glass-border);
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
         }
 
         .selected-files {
@@ -636,18 +485,11 @@
                 font-size: 1.8em;
             }
 
-            .upload-options {
-                flex-direction: column;
-            }
-
-            .upload-area,
-            .camera-area {
+            .upload-area {
                 padding: 30px 20px;
-                min-width: auto;
             }
 
-            .upload-icon,
-            .camera-icon {
+            .upload-icon {
                 font-size: 2.5em;
             }
         }
@@ -661,9 +503,7 @@
 
         /* High-resolution displays */
         @media (min-resolution: 192dpi) {
-
-            .upload-icon,
-            .camera-icon {
+            .upload-icon {
                 filter: drop-shadow(0 0 15px var(--accent-cyan));
             }
         }
@@ -687,32 +527,14 @@
                 <p>¡Sube tus mejores momentos para compartir con todos!</p>
             </div>
 
-            <!-- FIX: Upload options with gallery and camera -->
-            <div class="upload-options">
-                <div class="upload-area" onclick="selectFiles()">
-                    <div class="upload-icon">📁</div>
-                    <div class="upload-text">Seleccionar Fotos</div>
-                    <div class="upload-subtext">desde galería</div>
-                </div>
-
-                <!-- FIX: Camera disabled - requires HTTPS in modern browsers -->
-                <div class="camera-area camera-disabled" onclick="showCameraDisabledMessage()">
-                    <div class="camera-icon">📷</div>
-                    <div class="camera-text">Tomar Foto</div>
-                    <div class="camera-subtext">⚠️ no disponible</div>
-                </div>
+            <!-- Upload area - Gallery only -->
+            <div class="upload-area" onclick="selectFiles()">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Seleccionar Fotos</div>
+                <div class="upload-subtext">o arrastra y suelta archivos aquí</div>
             </div>
 
             <input type="file" id="file-input" multiple accept="image/*,image/heic,image/heif">
-
-            <!-- FIX: Camera controls with loop prevention -->
-            <div class="camera-controls" id="camera-controls">
-                <video id="camera-video" class="camera-video" autoplay playsinline></video>
-                <div class="camera-buttons">
-                    <button class="btn success" id="capture-btn" onclick="capturePhoto()">📸 Capturar</button>
-                    <button class="btn danger" id="close-camera-btn" onclick="closeCamera()">❌ Cerrar</button>
-                </div>
-            </div>
 
             <div class="selected-files" id="selected-files">
                 <h3>📋 Fotos seleccionadas:</h3>
@@ -736,14 +558,10 @@
             constructor() {
                 this.selectedFilesList = [];
                 this.isUploading = false;
-                this.cameraStream = null;
-                this.isCameraOpen = false;
-                this.cameraCloseTimeout = null; // FIX: Prevent camera loop
 
                 this.elements = {
                     fileInput: document.getElementById('file-input'),
                     uploadArea: document.querySelector('.upload-area'),
-                    cameraArea: document.querySelector('.camera-area'),
                     uploadBtn: document.getElementById('upload-btn'),
                     btnText: document.getElementById('btn-text'),
                     selectedFiles: document.getElementById('selected-files'),
@@ -752,74 +570,15 @@
                     progressFill: document.getElementById('progress-fill'),
                     message: document.getElementById('message'),
                     connectionStatus: document.getElementById('connection-status'),
-                    connectionText: document.getElementById('connection-text'),
-                    cameraControls: document.getElementById('camera-controls'),
-                    cameraVideo: document.getElementById('camera-video')
+                    connectionText: document.getElementById('connection-text')
                 };
 
                 this.init();
             }
 
             init() {
-                // FIX: Setup polyfill for older getUserMedia API (works on HTTP)
-                this.setupMediaDevicesPolyfill();
                 this.checkConnection();
                 this.setupEventListeners();
-            }
-
-            // FIX: Comprehensive polyfill for getUserMedia across all browsers and contexts
-            setupMediaDevicesPolyfill() {
-                console.log('🔧 Setting up MediaDevices polyfill...');
-                console.log('📍 Current navigator.mediaDevices:', navigator.mediaDevices);
-
-                // Check if modern API already exists
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    console.log('✅ Modern MediaDevices API available');
-                    return;
-                }
-
-                console.log('⚠️ Modern API not available, attempting polyfill...');
-
-                // First, try to find ANY available getUserMedia implementation
-                const getUserMedia = navigator.getUserMedia ||
-                                    navigator.webkitGetUserMedia ||
-                                    navigator.mozGetUserMedia ||
-                                    navigator.msGetUserMedia ||
-                                    (navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-
-                console.log('🔍 Available getUserMedia methods:', {
-                    'navigator.getUserMedia': !!navigator.getUserMedia,
-                    'navigator.webkitGetUserMedia': !!navigator.webkitGetUserMedia,
-                    'navigator.mozGetUserMedia': !!navigator.mozGetUserMedia,
-                    'navigator.msGetUserMedia': !!navigator.msGetUserMedia,
-                    'navigator.mediaDevices?.getUserMedia': !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
-                });
-
-                if (!getUserMedia) {
-                    console.error('❌ No getUserMedia API available in any form');
-                    return;
-                }
-
-                console.log('✅ Found getUserMedia implementation, creating polyfill...');
-
-                // Create mediaDevices object if it doesn't exist
-                if (!navigator.mediaDevices) {
-                    console.log('📝 Creating navigator.mediaDevices object');
-                    navigator.mediaDevices = {};
-                }
-
-                // Add getUserMedia as a Promise-based wrapper
-                if (!navigator.mediaDevices.getUserMedia) {
-                    console.log('📝 Adding getUserMedia to navigator.mediaDevices');
-                    navigator.mediaDevices.getUserMedia = function(constraints) {
-                        return new Promise((resolve, reject) => {
-                            getUserMedia.call(navigator, constraints, resolve, reject);
-                        });
-                    };
-                    console.log('✅ Polyfill successfully installed');
-                } else {
-                    console.log('✅ getUserMedia already exists');
-                }
             }
 
             setupEventListeners() {
@@ -892,171 +651,9 @@
                 }
             }
 
-            // FIX: File selection function
+            // File selection function
             selectFiles() {
-                if (this.isCameraOpen) {
-                    this.closeCamera();
-                }
                 this.elements.fileInput.click();
-            }
-
-            // FIX: Camera functions with loop prevention and detailed debugging
-            async toggleCamera() {
-                // DEBUG: Log environment
-                console.log('🎥 toggleCamera called');
-                console.log('📍 Protocol:', window.location.protocol);
-                console.log('📍 Hostname:', window.location.hostname);
-                console.log('📍 isCameraOpen:', this.isCameraOpen);
-
-                if (this.isCameraOpen) {
-                    this.closeCamera();
-                    return;
-                }
-
-                // Clear any pending close timeout
-                if (this.cameraCloseTimeout) {
-                    clearTimeout(this.cameraCloseTimeout);
-                    this.cameraCloseTimeout = null;
-                }
-
-                // FIX: Check if navigator exists
-                if (!navigator) {
-                    console.error('❌ navigator object not available');
-                    this.showMessage('❌ Navegador no soportado', 'error');
-                    return;
-                }
-
-                // FIX: Check if mediaDevices exists (after polyfill attempt)
-                console.log('🔍 navigator.mediaDevices:', navigator.mediaDevices);
-                if (!navigator.mediaDevices) {
-                    console.error('❌ navigator.mediaDevices is undefined');
-                    this.showMessage('⚠️ Cámara no disponible. Tu navegador no soporta acceso a cámara. Por favor usa "Seleccionar Fotos" 📁 para subir imágenes desde tu galería.', 'error');
-                    return;
-                }
-
-                // FIX: Check if getUserMedia exists (after polyfill attempt)
-                console.log('🔍 navigator.mediaDevices.getUserMedia:', navigator.mediaDevices.getUserMedia);
-                if (!navigator.mediaDevices.getUserMedia) {
-                    console.error('❌ getUserMedia not available (polyfill failed)');
-                    this.showMessage('⚠️ Función de cámara no disponible en este navegador. Por favor usa "Seleccionar Fotos" 📁 para subir desde tu galería.', 'error');
-                    return;
-                }
-
-                console.log('✅ All API checks passed, attempting camera access...');
-
-                try {
-                    console.log('📷 Trying back camera (environment)...');
-                    // Try back camera first (mobile)
-                    this.cameraStream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            facingMode: 'environment',
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
-                        }
-                    });
-
-                    console.log('✅ Back camera access granted');
-                    this.elements.cameraVideo.srcObject = this.cameraStream;
-                    this.elements.cameraControls.style.display = 'block';
-                    this.isCameraOpen = true;
-
-                } catch (error) {
-                    console.error('❌ Error accessing back camera:', error);
-                    console.error('Error name:', error.name);
-                    console.error('Error message:', error.message);
-
-                    // Try front camera as fallback
-                    try {
-                        console.log('📷 Trying front camera (user)...');
-                        this.cameraStream = await navigator.mediaDevices.getUserMedia({
-                            video: {
-                                facingMode: 'user',
-                                width: { ideal: 1280 },
-                                height: { ideal: 720 }
-                            }
-                        });
-
-                        console.log('✅ Front camera access granted');
-                        this.elements.cameraVideo.srcObject = this.cameraStream;
-                        this.elements.cameraControls.style.display = 'block';
-                        this.isCameraOpen = true;
-
-                    } catch (fallbackError) {
-                        console.error('❌ Fallback camera error:', fallbackError);
-                        console.error('Error name:', fallbackError.name);
-                        console.error('Error message:', fallbackError.message);
-
-                        // Show user-friendly error based on error type
-                        this.showCameraError(fallbackError);
-                    }
-                }
-            }
-
-            showCameraError(error) {
-                let message = '❌ No se puede acceder a la cámara. ';
-
-                if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-                    message += 'Por favor, permite el acceso a la cámara en la configuración de tu navegador.';
-                } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-                    message += 'No se detectó ninguna cámara en este dispositivo.';
-                } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
-                    message += 'La cámara está siendo usada por otra aplicación.';
-                } else if (error.name === 'OverconstrainedError' || error.name === 'ConstraintNotSatisfiedError') {
-                    message += 'La cámara no cumple con los requisitos técnicos.';
-                } else if (error.name === 'SecurityError') {
-                    message += 'Error de seguridad. Verifica los permisos del navegador.';
-                } else {
-                    message += `Error: ${error.message || 'Desconocido'}`;
-                }
-
-                message += ' Usa "Seleccionar Fotos" para subir desde tu galería.';
-                this.showMessage(message, 'error');
-            }
-
-            closeCamera() {
-                if (this.cameraStream) {
-                    this.cameraStream.getTracks().forEach(track => {
-                        track.stop();
-                    });
-                    this.cameraStream = null;
-                }
-
-                this.elements.cameraVideo.srcObject = null;
-                this.elements.cameraControls.style.display = 'none';
-                this.isCameraOpen = false;
-
-                // Clear any pending timeout
-                if (this.cameraCloseTimeout) {
-                    clearTimeout(this.cameraCloseTimeout);
-                    this.cameraCloseTimeout = null;
-                }
-            }
-
-            capturePhoto() {
-                if (!this.cameraStream || !this.isCameraOpen) {
-                    this.showMessage('La cámara no está activa.', 'error');
-                    return;
-                }
-
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-
-                canvas.width = this.elements.cameraVideo.videoWidth;
-                canvas.height = this.elements.cameraVideo.videoHeight;
-
-                context.drawImage(this.elements.cameraVideo, 0, 0);
-
-                canvas.toBlob((blob) => {
-                    const file = new File([blob], `camera_${Date.now()}.jpg`, { type: 'image/jpeg' });
-                    this.selectedFilesList.push(file);
-                    this.displaySelectedFiles();
-                    this.updateUploadButton();
-
-                    // Close camera after successful capture
-                    this.closeCamera();
-
-                    this.showMessage('Foto capturada correctamente!', 'success');
-                }, 'image/jpeg', 0.8);
             }
 
             handleFiles(event) {
@@ -1232,39 +829,9 @@
             window.uploader.selectFiles();
         }
 
-        // FIX: Camera disabled message function
-        function showCameraDisabledMessage() {
-            if (window.uploader) {
-                window.uploader.showMessage(
-                    '📷 La función de cámara no está disponible en este navegador por razones de seguridad. ' +
-                    'Por favor usa "Seleccionar Fotos" 📁 para subir imágenes desde tu galería.',
-                    'error'
-                );
-            }
-        }
-
-        function toggleCamera() {
-            window.uploader.toggleCamera();
-        }
-
-        function closeCamera() {
-            window.uploader.closeCamera();
-        }
-
-        function capturePhoto() {
-            window.uploader.capturePhoto();
-        }
-
         function uploadFiles() {
             window.uploader.uploadFiles();
         }
-
-        // Cleanup on page unload
-        window.addEventListener('beforeunload', function () {
-            if (window.uploader && window.uploader.isCameraOpen) {
-                window.uploader.closeCamera();
-            }
-        });
 
         // Initialize uploader when page loads
         document.addEventListener('DOMContentLoaded', () => {

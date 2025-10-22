@@ -2,6 +2,121 @@
 
 ---
 
+## 🔴 URGENTE: Evento Piloto del Sábado - Testing Checklist
+
+**Fecha límite**: Viernes 25/10/2025 (antes del evento)
+
+### ✅ Preparación Pre-Evento
+
+#### 1. Configuración Raspberry Pi (Mañana o Viernes)
+- [ ] **Acceder al Raspberry Pi vía SSH**
+  - `ssh pi@10.0.17.1`
+- [ ] **Ejecutar script de configuración captive portal**
+  - `cd /path/to/digital-memoirs`
+  - `sudo bash scripts/setup-captive-portal.sh`
+- [ ] **Verificar que dnsmasq esté corriendo**
+  - `sudo systemctl status dnsmasq`
+  - Debe mostrar: `active (running)`
+- [ ] **Probar resolución DNS**
+  - `nslookup captive.apple.com localhost`
+  - Debe resolver a: `10.0.17.1`
+
+#### 2. Verificación de Flask
+- [ ] **Código actualizado en Raspberry Pi**
+  - Copiar `app.py` actualizado con endpoints captive portal
+  - Copiar templates actualizados (`display.html`, `qr.html`)
+- [ ] **Probar que Flask inicie correctamente**
+  - `python app.py`
+  - Verificar que no haya errores
+  - Verificar logs muestran: "WiFi QR generated"
+- [ ] **Probar endpoints captive portal localmente**
+  - `curl http://localhost:5000/hotspot-detect.html`
+  - `curl http://localhost:5000/generate_204`
+  - Deben redirigir (código 302)
+
+#### 3. Testing con Dispositivos Reales
+
+**Testing iOS (iPhone):**
+- [ ] Desconectar de WiFi "MomentoMarco"
+- [ ] Escanear QR WiFi con app Cámara
+- [ ] **Verificar**: Se conecta automáticamente (2-5 segundos)
+- [ ] **Verificar**: Aparece notificación "Iniciar sesión en red"
+- [ ] **Verificar**: Al tocar notificación → abre navegador con `/upload`
+- [ ] **Verificar**: Puede subir fotos exitosamente
+
+**Testing Android:**
+- [ ] Desconectar de WiFi "MomentoMarco"
+- [ ] Escanear QR WiFi
+- [ ] **Verificar**: Se conecta automáticamente
+- [ ] **Verificar**: Aparece notificación "Sign in to Wi-Fi network"
+- [ ] **Verificar**: Al tocar notificación → abre navegador con `/upload`
+- [ ] **Verificar**: Puede subir fotos exitosamente
+
+**Testing Fallback Manual:**
+- [ ] Conectar al WiFi manualmente
+- [ ] Abrir navegador e ir a cualquier URL (google.com)
+- [ ] **Verificar**: Redirige a `http://10.0.17.1:5000/upload`
+
+#### 4. Testing de Carga
+- [ ] **Subir 50 fotos simultáneas** → Verificar que se procesen
+- [ ] **Conectar 3+ dispositivos simultáneamente** → Verificar que todos funcionen
+- [ ] **Verificar slideshow se actualiza** con las nuevas fotos
+
+#### 5. Plan B / Rollback
+- [ ] **Guardar backup de configuración anterior**
+  - dnsmasq.conf backup ya creado por script
+- [ ] **Tener QR URL listo como fallback**
+  - Si captive portal falla: mostrar QR con URL directa
+  - URL: `http://10.0.17.1:5000/upload`
+
+---
+
+### 📋 Checklist Día del Evento (Sábado)
+
+#### Pre-Evento (2 horas antes)
+- [ ] **Iniciar Raspberry Pi**
+- [ ] **Verificar WiFi "MomentoMarco" está activo**
+  - `iwconfig` o revisar desde otro dispositivo
+- [ ] **Iniciar Flask**
+  - `cd /path/to/digital-memoirs`
+  - `python app.py`
+- [ ] **Verificar QR WiFi se generó**
+  - Abrir navegador en `http://10.0.17.1:5000/qr`
+- [ ] **Proyectar pantalla `/display` en TV/monitor**
+- [ ] **Probar con tu propio teléfono**
+  - Escanear QR → Conectar → Subir foto de prueba
+
+#### Durante el Evento
+- [ ] **Monitorear logs de Flask** en terminal
+- [ ] **Verificar que slideshow muestre fotos nuevas**
+- [ ] **Tener laptop con acceso a RPi** por si surge algún problema
+
+#### Post-Evento
+- [ ] **Backup de todas las fotos subidas**
+  - `cp -r uploads/ /backup/evento-YYYYMMDD/`
+- [ ] **Documentar problemas encontrados** en TODO.md
+
+---
+
+### 🚨 Troubleshooting Rápido
+
+**Si captive portal no funciona:**
+1. Verificar dnsmasq: `sudo systemctl status dnsmasq`
+2. Reiniciar dnsmasq: `sudo systemctl restart dnsmasq`
+3. **PLAN B**: Mostrar QR con URL directa en `/qr` y pedir a usuarios conectarse manualmente primero
+
+**Si Flask crashea:**
+1. Revisar logs en terminal
+2. Reiniciar: `pkill -f app.py && python app.py`
+3. Verificar espacio en disco: `df -h`
+
+**Si slideshow no se actualiza:**
+1. Verificar watchdog está corriendo (logs de Flask)
+2. Verificar permisos carpeta uploads: `ls -la uploads/`
+3. Recargar página `/display` en navegador
+
+---
+
 21/10/2025
 
 ## ✅ **Camera Functionality Investigation & Widget Orientation Fix**
