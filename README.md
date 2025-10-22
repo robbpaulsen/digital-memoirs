@@ -2,32 +2,60 @@
 
 ¡Bienvenido! Este es un proyecto de aplicación web diseñado para que los invitados de un evento, como un cumpleaños o una fiesta, puedan compartir sus fotos fácilmente y verlas en una presentación en tiempo real.
 
+<br>
+
 ## 🚀 ¿Cómo funciona?
 
 1.  El anfitrión inicia la aplicación en una computadora o dispositivo conectado a la misma red Wi-Fi que los invitados.
 2.  La aplicación genera un **código QR** que se muestra en la pantalla principal.
-3.  Los invitados escanean el código QR con sus teléfonos, lo que los redirige a una página web local para subir sus fotos.
+3.  Los invitados escanean el código QR con sus teléfonos, lo que los conecta a la aplicacion y redirige a una página web local para subir sus fotos.
 4.  Una vez subidas, las fotos aparecen automáticamente en un **slideshow** que se puede proyectar en una pantalla grande para que todos las vean.
 
----
+<br>
 
 ## ✨ Características Principales
 
 * **Generación de QR Automática:** Al iniciar, la aplicación genera un código QR con la dirección IP local para un acceso rápido y sencillo.
 
-![](assets/qr-webapp.png)
+<br>
+
+![](assets/qr-endpoint.gif)
+
+<br>
+
+![](assets/qr-endpoint.png)
+
+<br>
 
 * **Subida de Fotos Simplificada:** Los usuarios pueden subir fotos de manera fácil y rápida desde sus dispositivos móviles.
 
-![](assets/load-image.png)
+<br>
+
+![](assets/display-upload.gif)
+
+<br>
+
+![](assets/upload-new.png)
+
+<br>
 
 * **Slideshow en Tiempo Real:** Las fotos se actualizan en el slideshow automáticamente, sin necesidad de recargar la página.
 
-![](assets/slideshow.gif)
+<br>
+
+![](assets/display-endpoint.gif)
+
+<br>
+
+![](assets/display-endpoint.png)
+
+<br>
 
 * **Gestión Segura de Archivos:** Cada foto subida recibe un nombre único (**UUID**) para evitar errores causados por espacios o caracteres especiales en los nombres de los archivos.
 
 ---
+
+<br>
 
 ## 🛠️ Requisitos del Sistema
 
@@ -83,13 +111,43 @@ uv sync
 ./.venv/bin/python3 app.py
 ```
 
+o con
+
+```bash
+uv run app.py
+```
+
+<br>
+
 ---
+
+<br>
 
 ## 📁 Estructura del Proyecto
 
 * `app.py`: El cerebro de la aplicación, un servidor Flask que maneja las rutas y la lógica principal.
-* `subir.html`: La plantilla HTML para la página de subida de fotos.
-* `slideshow.html`: La plantilla HTML para el slideshow que muestra las imágenes.
-* `index.html`: La plantilla HTML que muestra el código QR para el evento.
-* `static/`: Contiene los archivos estáticos como las imágenes subidas (`uploads`).
-* `qr/`: Directorio donde se guarda la imagen del código QR generado.
+* `upload.html`: La plantilla HTML para la página de subida de fotos.
+* `display.html`: La plantilla HTML para el slideshow que muestra las imágenes.
+* `uploads/`: Contiene los archivos estáticos como las imágenes subidas (`uploads`).
+* `qr.html`: Directorio donde se guarda la imagen del código QR generado.
+
+<br>
+
+```bash
+ .
+├──  app.py
+├──  templates
+├──────  display.html
+├──────  qr.html
+├──────  upload.html
+├───  static
+├──────  qr_code.png
+├──  Scripts
+├──  assets
+├──  uploads
+├──  .python-version
+├──  app.py
+├──  pyproject.toml
+├──  README.md
+└──  TODO.md
+```
