@@ -1,5 +1,87 @@
 # TODO - Digital Memoirs
 
+---
+
+21/10/2025
+
+## ✅ **Camera Functionality Investigation & Widget Orientation Fix**
+
+### **Issue 1: Camera Button Not Working - getUserMedia API Blocked**
+
+**Status:** ✅ RESOLVED (Feature Disabled)
+**Date:** 21/10/2025
+
+#### **Problem Description:**
+- Camera button in `/upload` page threw `TypeError: Cannot read properties of undefined (reading 'getUserMedia')`
+- Error occurred when accessing from HTTP on local IP (e.g., `http://192.168.6.105:5000/upload`)
+- All getUserMedia APIs returned `undefined`:
+  - `navigator.mediaDevices` - undefined
+  - `navigator.getUserMedia` - false
+  - `navigator.webkitGetUserMedia` - false
+  - `navigator.mozGetUserMedia` - false
+  - `navigator.msGetUserMedia` - false
+
+#### **Root Cause:**
+Modern browsers (Chrome, Brave, Firefox) block `getUserMedia` API in **insecure contexts** (HTTP on non-localhost IPs) for security reasons. This is a browser-level security policy that cannot be bypassed without HTTPS.
+
+#### **Investigation Steps:**
+1. Implemented comprehensive polyfill to detect all available getUserMedia APIs (upload.html:741-794)
+2. Added detailed console logging to diagnose which APIs were available
+3. Confirmed all APIs blocked in HTTP context on local network IP
+
+#### **Solution Implemented:**
+- **Disabled camera button** with visual indicators:
+  - Added `.camera-disabled` CSS class with grayed-out styling (upload.html:278-304)
+  - Changed button text to show "⚠️ no disponible"
+  - Implemented `showCameraDisabledMessage()` function with informative error message
+  - Cursor changes to `not-allowed` on hover
+- **Preserved "Seleccionar Fotos" functionality** - works perfectly
+- Camera feature can be re-enabled in future by configuring HTTPS with SSL certificates
+
+#### **Files Modified:**
+- `templates/upload.html:671-675` - Added `camera-disabled` class to button
+- `templates/upload.html:278-304` - CSS styling for disabled state
+- `templates/upload.html:741-794` - Polyfill implementation with debugging
+- `templates/upload.html:1235-1244` - Disabled message function
+
+#### **Future Enhancement:**
+To re-enable camera functionality, configure Flask with HTTPS using self-signed certificates:
+```python
+app.run(host='0.0.0.0', port=5000, ssl_context='adhoc')
+```
+Or use proper SSL certificates with nginx/apache reverse proxy.
+
+---
+
+### **Issue 2: Widget Orientation Mismatch in Display**
+
+**Status:** ✅ RESOLVED
+**Date:** 21/10/2025
+
+#### **Problem Description:**
+- Slideshow container rotated 90 degrees for landscape projection
+- "Sistema Activo" and "0 FOTOS" widgets remained horizontal
+- Visual inconsistency with rotated slideshow content
+
+#### **Solution Implemented:**
+- Applied `transform: rotate(90deg)` to both widgets
+- **Left widget** ("Sistema Activo"):
+  - `transform: rotate(90deg) translateY(-100%)`
+  - `transform-origin: top left`
+- **Right widget** ("0 FOTOS"):
+  - `transform: rotate(90deg) translateX(100%)`
+  - `transform-origin: top right`
+- Both widgets now align with slideshow orientation
+
+#### **Files Modified:**
+- `templates/display.html:111-116` - Header widget rotation
+- `templates/display.html:153-158` - Photo counter rotation
+
+#### **Result:**
+All UI elements now display in consistent vertical orientation for landscape projection.
+
+---
+
 15/10/2025
 
 ## Priority Issues

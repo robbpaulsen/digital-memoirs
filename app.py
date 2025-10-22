@@ -426,7 +426,7 @@ if __name__ == '__main__':
         # FIX: SOLUTION TO BROWSER BUG: Changed debug=True to debug=False
         # In debug mode, Flask uses a reloader that causes 2 tabs to open
         # Also improved threading and error handling
-        app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
+        app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
     except KeyboardInterrupt:
         logger.info("\n🛑 Received interrupt signal")
         cleanup_qr_code()

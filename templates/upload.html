@@ -275,6 +275,34 @@
             left: 100%;
         }
 
+        /* FIX: Camera disabled state */
+        .camera-area.camera-disabled {
+            border-color: rgba(148, 163, 184, 0.3);
+            background: rgba(148, 163, 184, 0.05);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .camera-area.camera-disabled:hover {
+            border-color: rgba(148, 163, 184, 0.4);
+            background: rgba(148, 163, 184, 0.08);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .camera-area.camera-disabled::before {
+            display: none;
+        }
+
+        .camera-area.camera-disabled .camera-icon {
+            filter: grayscale(1) opacity(0.5);
+        }
+
+        .camera-area.camera-disabled .camera-text,
+        .camera-area.camera-disabled .camera-subtext {
+            opacity: 0.7;
+        }
+
         .upload-icon {
             font-size: 3em;
             margin-bottom: 15px;
@@ -667,10 +695,11 @@
                     <div class="upload-subtext">desde galería</div>
                 </div>
 
-                <div class="camera-area" onclick="toggleCamera()">
+                <!-- FIX: Camera disabled - requires HTTPS in modern browsers -->
+                <div class="camera-area camera-disabled" onclick="showCameraDisabledMessage()">
                     <div class="camera-icon">📷</div>
                     <div class="camera-text">Tomar Foto</div>
-                    <div class="camera-subtext">usar cámara</div>
+                    <div class="camera-subtext">⚠️ no disponible</div>
                 </div>
             </div>
 
@@ -732,8 +761,65 @@
             }
 
             init() {
+                // FIX: Setup polyfill for older getUserMedia API (works on HTTP)
+                this.setupMediaDevicesPolyfill();
                 this.checkConnection();
                 this.setupEventListeners();
+            }
+
+            // FIX: Comprehensive polyfill for getUserMedia across all browsers and contexts
+            setupMediaDevicesPolyfill() {
+                console.log('🔧 Setting up MediaDevices polyfill...');
+                console.log('📍 Current navigator.mediaDevices:', navigator.mediaDevices);
+
+                // Check if modern API already exists
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    console.log('✅ Modern MediaDevices API available');
+                    return;
+                }
+
+                console.log('⚠️ Modern API not available, attempting polyfill...');
+
+                // First, try to find ANY available getUserMedia implementation
+                const getUserMedia = navigator.getUserMedia ||
+                                    navigator.webkitGetUserMedia ||
+                                    navigator.mozGetUserMedia ||
+                                    navigator.msGetUserMedia ||
+                                    (navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+                console.log('🔍 Available getUserMedia methods:', {
+                    'navigator.getUserMedia': !!navigator.getUserMedia,
+                    'navigator.webkitGetUserMedia': !!navigator.webkitGetUserMedia,
+                    'navigator.mozGetUserMedia': !!navigator.mozGetUserMedia,
+                    'navigator.msGetUserMedia': !!navigator.msGetUserMedia,
+                    'navigator.mediaDevices?.getUserMedia': !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+                });
+
+                if (!getUserMedia) {
+                    console.error('❌ No getUserMedia API available in any form');
+                    return;
+                }
+
+                console.log('✅ Found getUserMedia implementation, creating polyfill...');
+
+                // Create mediaDevices object if it doesn't exist
+                if (!navigator.mediaDevices) {
+                    console.log('📝 Creating navigator.mediaDevices object');
+                    navigator.mediaDevices = {};
+                }
+
+                // Add getUserMedia as a Promise-based wrapper
+                if (!navigator.mediaDevices.getUserMedia) {
+                    console.log('📝 Adding getUserMedia to navigator.mediaDevices');
+                    navigator.mediaDevices.getUserMedia = function(constraints) {
+                        return new Promise((resolve, reject) => {
+                            getUserMedia.call(navigator, constraints, resolve, reject);
+                        });
+                    };
+                    console.log('✅ Polyfill successfully installed');
+                } else {
+                    console.log('✅ getUserMedia already exists');
+                }
             }
 
             setupEventListeners() {
@@ -814,8 +900,14 @@
                 this.elements.fileInput.click();
             }
 
-            // FIX: Camera functions with loop prevention
+            // FIX: Camera functions with loop prevention and detailed debugging
             async toggleCamera() {
+                // DEBUG: Log environment
+                console.log('🎥 toggleCamera called');
+                console.log('📍 Protocol:', window.location.protocol);
+                console.log('📍 Hostname:', window.location.hostname);
+                console.log('📍 isCameraOpen:', this.isCameraOpen);
+
                 if (this.isCameraOpen) {
                     this.closeCamera();
                     return;
@@ -827,7 +919,33 @@
                     this.cameraCloseTimeout = null;
                 }
 
+                // FIX: Check if navigator exists
+                if (!navigator) {
+                    console.error('❌ navigator object not available');
+                    this.showMessage('❌ Navegador no soportado', 'error');
+                    return;
+                }
+
+                // FIX: Check if mediaDevices exists (after polyfill attempt)
+                console.log('🔍 navigator.mediaDevices:', navigator.mediaDevices);
+                if (!navigator.mediaDevices) {
+                    console.error('❌ navigator.mediaDevices is undefined');
+                    this.showMessage('⚠️ Cámara no disponible. Tu navegador no soporta acceso a cámara. Por favor usa "Seleccionar Fotos" 📁 para subir imágenes desde tu galería.', 'error');
+                    return;
+                }
+
+                // FIX: Check if getUserMedia exists (after polyfill attempt)
+                console.log('🔍 navigator.mediaDevices.getUserMedia:', navigator.mediaDevices.getUserMedia);
+                if (!navigator.mediaDevices.getUserMedia) {
+                    console.error('❌ getUserMedia not available (polyfill failed)');
+                    this.showMessage('⚠️ Función de cámara no disponible en este navegador. Por favor usa "Seleccionar Fotos" 📁 para subir desde tu galería.', 'error');
+                    return;
+                }
+
+                console.log('✅ All API checks passed, attempting camera access...');
+
                 try {
+                    console.log('📷 Trying back camera (environment)...');
                     // Try back camera first (mobile)
                     this.cameraStream = await navigator.mediaDevices.getUserMedia({
                         video: {
@@ -837,15 +955,19 @@
                         }
                     });
 
+                    console.log('✅ Back camera access granted');
                     this.elements.cameraVideo.srcObject = this.cameraStream;
                     this.elements.cameraControls.style.display = 'block';
                     this.isCameraOpen = true;
 
                 } catch (error) {
-                    console.error('Error accessing back camera:', error);
+                    console.error('❌ Error accessing back camera:', error);
+                    console.error('Error name:', error.name);
+                    console.error('Error message:', error.message);
 
                     // Try front camera as fallback
                     try {
+                        console.log('📷 Trying front camera (user)...');
                         this.cameraStream = await navigator.mediaDevices.getUserMedia({
                             video: {
                                 facingMode: 'user',
@@ -854,15 +976,41 @@
                             }
                         });
 
+                        console.log('✅ Front camera access granted');
                         this.elements.cameraVideo.srcObject = this.cameraStream;
                         this.elements.cameraControls.style.display = 'block';
                         this.isCameraOpen = true;
 
                     } catch (fallbackError) {
-                        console.error('Fallback camera error:', fallbackError);
-                        this.showMessage('Cámara no disponible en este dispositivo.', 'error');
+                        console.error('❌ Fallback camera error:', fallbackError);
+                        console.error('Error name:', fallbackError.name);
+                        console.error('Error message:', fallbackError.message);
+
+                        // Show user-friendly error based on error type
+                        this.showCameraError(fallbackError);
                     }
                 }
+            }
+
+            showCameraError(error) {
+                let message = '❌ No se puede acceder a la cámara. ';
+
+                if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                    message += 'Por favor, permite el acceso a la cámara en la configuración de tu navegador.';
+                } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+                    message += 'No se detectó ninguna cámara en este dispositivo.';
+                } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+                    message += 'La cámara está siendo usada por otra aplicación.';
+                } else if (error.name === 'OverconstrainedError' || error.name === 'ConstraintNotSatisfiedError') {
+                    message += 'La cámara no cumple con los requisitos técnicos.';
+                } else if (error.name === 'SecurityError') {
+                    message += 'Error de seguridad. Verifica los permisos del navegador.';
+                } else {
+                    message += `Error: ${error.message || 'Desconocido'}`;
+                }
+
+                message += ' Usa "Seleccionar Fotos" para subir desde tu galería.';
+                this.showMessage(message, 'error');
             }
 
             closeCamera() {
@@ -1082,6 +1230,17 @@
         // Global functions
         function selectFiles() {
             window.uploader.selectFiles();
+        }
+
+        // FIX: Camera disabled message function
+        function showCameraDisabledMessage() {
+            if (window.uploader) {
+                window.uploader.showMessage(
+                    '📷 La función de cámara no está disponible en este navegador por razones de seguridad. ' +
+                    'Por favor usa "Seleccionar Fotos" 📁 para subir imágenes desde tu galería.',
+                    'error'
+                );
+            }
         }
 
         function toggleCamera() {
