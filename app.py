@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory, make_response
 from werkzeug.utils import secure_filename
 import os
 import uuid
@@ -432,35 +432,36 @@ def status():
 # ============================================================
 # CAPTIVE PORTAL DETECTION ENDPOINTS
 # ============================================================
-# These endpoints intercept OS-level captive portal checks
-# and automatically open the upload page in captive portal browser
+# NOTA (25/10/2025): Estos endpoints devuelven HTTP 204 para autenticación
+# silenciosa. El CNA no se abre, evitando confusión al usuario. El flujo es:
+# 1. Usuario se conecta al WiFi
+# 2. OS detecta portal y solicita estos endpoints en background
+# 3. Flask responde 204 = "Portal resuelto, sin intervención requerida"
+# 4. Usuario usa 2 QR codes manualmente (WiFi + URL)
 
 @app.route('/hotspot-detect.html')
 @app.route('/library/test/success.html')
 def ios_captive_portal():
-    """iOS captive portal detection - REDIRECTS to upload page"""
-    logger.info("🍎 iOS captive portal detected - redirecting to /upload")
-    # FIX: Use HTTP 302 redirect instead of HTTP 200 to keep CNA open
-    return redirect(url_for('upload_page'))
+    """iOS captive portal - Authenticate silently without opening browser"""
+    logger.info("🍎 iOS captive portal detected - authenticating silently (HTTP 204)")
+    # Return 204 No Content = Portal resolved, don't open CNA
+    return make_response('', 204)
 
 @app.route('/generate_204')
 @app.route('/gen_204')
 def android_captive_portal():
-    """Android captive portal detection - REDIRECTS to upload page"""
-    logger.info("🤖 Android captive portal detected - redirecting to /upload")
-    # FIX: Use HTTP 302 redirect instead of HTTP 200
-    # This keeps Android CNA (Captive Network Assistant) open
-    # The background service continues polling /generate_204 and receives 302
-    # Android interprets this as "user still authenticating" and keeps portal open
-    return redirect(url_for('upload_page'))
+    """Android captive portal - Authenticate silently without opening browser"""
+    logger.info("🤖 Android captive portal detected - authenticating silently (HTTP 204)")
+    # Return 204 No Content = Portal resolved, don't open CNA
+    return make_response('', 204)
 
 @app.route('/connecttest.txt')
 @app.route('/ncsi.txt')
 def windows_captive_portal():
-    """Windows captive portal detection - REDIRECTS to upload page"""
-    logger.info("🪟 Windows captive portal detected - redirecting to /upload")
-    # FIX: Use HTTP 302 redirect instead of HTTP 200 to keep portal open
-    return redirect(url_for('upload_page'))
+    """Windows captive portal - Authenticate silently without opening browser"""
+    logger.info("🪟 Windows captive portal detected - authenticating silently (HTTP 204)")
+    # Return 204 No Content = Portal resolved, don't open CNA
+    return make_response('', 204)
 
 def setup_file_watcher():
     """Setup file system watcher for uploads directory"""

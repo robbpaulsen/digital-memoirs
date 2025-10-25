@@ -1,0 +1,273 @@
+<!-- scripts/qr_option_c.html - OPCIÓN C: Layout Minimalista Ultra-Compacto -->
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sube tus Fotos - MomentoMarco</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 20px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .qr-label {
+            font-size: 0.95em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .qr-sublabel {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .qr-box {
+            background: #f8f8f8;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 12px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .qr-box img {
+            width: 140px;
+            height: 140px;
+            display: block;
+        }
+
+        .qr-hint {
+            font-size: 0.75em;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 20px 0;
+        }
+
+        .url-section {
+            background: #f8f8f8;
+            border-radius: 15px;
+            padding: 15px;
+        }
+
+        .url-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .url-box {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.75em;
+            color: #667eea;
+            word-break: break-all;
+            text-align: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .url-box:active {
+            background: #f0f0f0;
+            border-color: #667eea;
+        }
+
+        .copy-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:active {
+            transform: scale(0.98);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #10b981;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            font-weight: 600;
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+            z-index: 1000;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 380px) {
+            .card {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .qr-box img {
+                width: 120px;
+                height: 120px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <!-- Header -->
+        <div class="header">
+            <h1>📸 Sube tus Fotos</h1>
+            <p>Comparte tus momentos</p>
+        </div>
+
+        <!-- QR WiFi -->
+        <div class="qr-section">
+            <div class="qr-label">1️⃣ WiFi: {{ wifi_ssid }}</div>
+            <div class="qr-box">
+                <img src="{{ qr_wifi_path }}" alt="QR WiFi">
+            </div>
+            <div class="qr-hint">Escanea para conectar</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- QR URL -->
+        <div class="qr-section">
+            <div class="qr-label">2️⃣ Subir Fotos</div>
+            <div class="qr-box">
+                <img src="{{ qr_url_path }}" alt="QR URL">
+            </div>
+            <div class="qr-hint">Escanea para abrir app</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- URL Manual -->
+        <div class="url-section">
+            <div class="url-label">O copia la URL:</div>
+            <div class="url-box" id="upload-url" onclick="copyUrl()">
+                {{ upload_url }}
+            </div>
+            <button class="copy-btn" onclick="copyUrl()">📋 Copiar</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">¡Copiado!</div>
+
+    <script>
+        const uploadUrl = "{{ upload_url }}";
+        const toast = document.getElementById('toast');
+
+        async function copyUrl() {
+            try {
+                await navigator.clipboard.writeText(uploadUrl);
+                showToast();
+            } catch (error) {
+                fallbackCopy();
+            }
+        }
+
+        function fallbackCopy() {
+            const textArea = document.createElement('textarea');
+            textArea.value = uploadUrl;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+                showToast();
+            } catch (error) {
+                alert('Error al copiar URL');
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function showToast() {
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 1500);
+        }
+    </script>
+</body>
+
+</html>

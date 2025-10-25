@@ -1,11 +1,11 @@
-<!-- templates/qr.html - VERSIÓN CORREGIDA -->
+<!-- templates/qr.html - OPCIÓN A: Layout Vertical Compacto (Mobile-First) -->
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compartir Fotos - QR Code</title>
+    <title>Sube tus Fotos - MomentoMarco</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
 
@@ -17,11 +17,11 @@
             --accent-purple: #8b5cf6;
             --accent-pink: #ec4899;
             --accent-green: #10b981;
+            --accent-orange: #f59e0b;
             --text-primary: #e2e8f0;
             --text-secondary: #94a3b8;
             --glass-bg: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
-            --shadow-glow: 0 0 20px rgba(0, 245, 255, 0.3);
         }
 
         * {
@@ -41,79 +41,23 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            position: relative;
-            overflow: hidden;
+            padding: 15px;
+            overflow-x: hidden;
         }
 
-        /* Animated background patterns */
-        .bg-pattern {
-            position: fixed;
+        .container {
+            max-width: 500px;
             width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .bg-pattern::before {
-            content: '';
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, var(--accent-cyan) 0%, transparent 70%);
-            border-radius: 50%;
-            top: 20%;
-            left: 10%;
-            opacity: 0.08;
-            animation: pulse 4s ease-in-out infinite;
-        }
-
-        .bg-pattern::after {
-            content: '';
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, var(--accent-purple) 0%, transparent 70%);
-            border-radius: 50%;
-            bottom: 20%;
-            right: 15%;
-            opacity: 0.08;
-            animation: pulse 4s ease-in-out infinite reverse;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-                opacity: 0.08;
-            }
-
-            50% {
-                transform: scale(1.2);
-                opacity: 0.12;
-            }
-        }
-
-        .qr-container {
-            text-align: center;
             background: var(--glass-bg);
             backdrop-filter: blur(25px);
             border: 1px solid var(--glass-border);
-            border-radius: 40px;
-            box-shadow:
-                0 25px 50px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            max-width: 550px;
-            width: 100%;
+            border-radius: 30px;
+            padding: 25px 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
             position: relative;
-            z-index: 10;
-            overflow: hidden;
         }
 
-        .qr-container::before {
+        .container::before {
             content: '';
             position: absolute;
             top: -2px;
@@ -121,548 +65,314 @@
             right: -2px;
             bottom: -2px;
             background: linear-gradient(45deg, var(--accent-cyan), var(--accent-purple), var(--accent-pink));
-            border-radius: 42px;
+            border-radius: 32px;
             z-index: -1;
-            opacity: 0.6;
+            opacity: 0.5;
             animation: borderGlow 3s ease-in-out infinite;
         }
 
         @keyframes borderGlow {
-
-            0%,
-            100% {
-                opacity: 0.4;
-            }
-
-            50% {
-                opacity: 0.8;
-            }
-        }
-
-        .container-content {
-            padding: 60px 40px;
-            position: relative;
-            z-index: 2;
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.7; }
         }
 
         .header {
-            margin-bottom: 45px;
+            text-align: center;
+            margin-bottom: 25px;
         }
 
         .header h1 {
+            font-size: 2em;
             background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
-            font-size: 3.2em;
-            margin-bottom: 20px;
-            font-weight: 700;
-            text-shadow: var(--shadow-glow);
-            animation: titlePulse 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes titlePulse {
-            0% {
-                filter: brightness(1);
-            }
-
-            100% {
-                filter: brightness(1.2);
-            }
+            margin-bottom: 8px;
         }
 
         .header p {
-            font-size: 1.4em;
+            font-size: 0.9em;
             color: var(--text-secondary);
-            line-height: 1.6;
-            font-weight: 400;
         }
 
-        .qr-section {
-            margin: 45px 0;
-            position: relative;
-        }
-
-        .qr-code {
+        .step-card {
             background: var(--glass-bg);
-            border: 2px solid var(--glass-border);
-            padding: 20px;
-            border-radius: 30px;
-            display: inline-block;
-            box-shadow:
-                0 15px 35px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            margin-bottom: 35px;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .qr-code:hover {
-            transform: translateY(-5px);
-            box-shadow:
-                0 25px 50px rgba(0, 245, 255, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-
-        .qr-code::before {
-            content: '';
-            position: absolute;
-            top: -1px;
-            left: -1px;
-            right: -1px;
-            bottom: -1px;
-            background: linear-gradient(45deg, var(--accent-cyan), var(--accent-purple));
-            border-radius: 31px;
-            z-index: -1;
-            opacity: 0.7;
-        }
-
-        .qr-code img {
-            width: 280px;
-            height: 280px;
-            display: block;
-            border-radius: 20px;
-            filter: contrast(1.1) brightness(1.1);
-            transition: all 0.3s ease;
-        }
-
-        .qr-code:hover img {
-            filter: contrast(1.2) brightness(1.2);
-        }
-
-        /* QR Code scanning animation */
-        .scan-line {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
-            animation: scan 3s ease-in-out infinite;
-            border-radius: 2px;
-        }
-
-        @keyframes scan {
-            0% {
-                transform: translateY(0);
-                opacity: 0;
-            }
-
-            50% {
-                opacity: 1;
-            }
-
-            100% {
-                transform: translateY(240px);
-                opacity: 0;
-            }
-        }
-
-        .instructions {
-            background: rgba(255, 255, 255, 0.02);
             border: 1px solid var(--glass-border);
-            border-radius: 30px;
-            padding: 40px;
-            margin-top: 35px;
-            box-shadow:
-                0 15px 35px rgba(0, 0, 0, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
-        }
-
-        .instructions h2 {
-            font-size: 2em;
-            margin-bottom: 25px;
-            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            font-weight: 600;
-        }
-
-        .step {
-            font-size: 1.3em;
-            margin: 20px 0;
-            padding: 15px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
             transition: all 0.3s ease;
         }
 
-        .step:hover {
-            transform: translateX(10px);
-            color: var(--accent-cyan);
-        }
-
-        .step:last-child {
-            border-bottom: none;
+        .step-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 245, 255, 0.2);
         }
 
         .step-number {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 45px;
-            height: 45px;
+            width: 35px;
+            height: 35px;
             background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
-            color: var(--dark-bg-primary);
             border-radius: 50%;
-            text-align: center;
+            font-size: 1.2em;
             font-weight: 700;
-            margin-right: 20px;
+            margin-bottom: 12px;
+        }
+
+        .step-title {
             font-size: 1.1em;
-            box-shadow: 0 5px 15px rgba(0, 245, 255, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .step:hover .step-number {
-            transform: scale(1.1);
-            box-shadow: 0 8px 25px rgba(0, 245, 255, 0.5);
-        }
-
-        .step-text {
-            flex: 1;
-            font-weight: 500;
-        }
-
-        /* URL display */
-        .url-display {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 20px;
-            margin-top: 25px;
-            font-family: 'Fira Code', monospace;
-        }
-
-        .url-display .label {
-            color: var(--text-secondary);
-            font-size: 0.9em;
+            font-weight: 600;
             margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .url-display .url {
-            color: var(--accent-cyan);
-            font-size: 1.1em;
-            word-break: break-all;
-            font-weight: 500;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .url-display .url:hover {
-            color: var(--accent-purple);
-        }
-
-        /* Copy button */
-        .copy-btn {
-            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
             color: var(--text-primary);
-            border: none;
-            padding: 12px 25px;
+        }
+
+        .step-subtitle {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .qr-wrapper {
+            background: white;
             border-radius: 15px;
-            font-size: 0.9em;
+            padding: 12px;
+            display: inline-block;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .qr-wrapper img {
+            width: 150px;
+            height: 150px;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .scan-hint {
+            font-size: 0.8em;
+            color: var(--accent-cyan);
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-purple), transparent);
+            margin: 20px 0;
+        }
+
+        .url-section {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .url-label {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .url-display {
+            background: var(--dark-bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 12px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75em;
+            color: var(--accent-cyan);
+            word-break: break-all;
+            margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 15px;
-            font-family: inherit;
-            font-weight: 500;
         }
 
-        .copy-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+        .url-display:hover {
+            background: var(--dark-bg-tertiary);
+            border-color: var(--accent-cyan);
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-family: inherit;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 245, 255, 0.3);
         }
 
         .copy-btn:active {
-            transform: translateY(0);
+            transform: scale(0.95);
         }
 
-        /* Status indicator */
-        .status-indicator {
+        .toast {
             position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(16, 185, 129, 0.2);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: var(--accent-green);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            backdrop-filter: blur(10px);
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-green);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            font-weight: 600;
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+            z-index: 1000;
+            animation: slideDown 0.3s ease-out;
+            display: none;
         }
 
-        /* Mobile optimizations */
-        @media (max-width: 600px) {
-            .container-content {
-                padding: 40px 25px;
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 400px) {
+            .container {
+                padding: 20px 15px;
             }
 
             .header h1 {
-                font-size: 2.4em;
+                font-size: 1.7em;
             }
 
-            .header p {
-                font-size: 1.2em;
+            .qr-wrapper img {
+                width: 130px;
+                height: 130px;
             }
 
-            .qr-code img {
-                width: 220px;
-                height: 220px;
-            }
-
-            .instructions h2 {
-                font-size: 1.6em;
-            }
-
-            .step {
-                font-size: 1.1em;
-            }
-
-            .step-number {
-                width: 40px;
-                height: 40px;
-                margin-right: 15px;
-                font-size: 1em;
-            }
-        }
-
-        /* Tablet optimizations */
-        @media (min-width: 601px) and (max-width: 1024px) {
-            .qr-container {
-                max-width: 600px;
-            }
-        }
-
-        /* Success animation */
-        .success-check {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            background: var(--accent-green);
-            border-radius: 50%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5em;
-            color: white;
-            animation: successPop 0.5s ease-out;
-        }
-
-        @keyframes successPop {
-            0% {
-                transform: translate(-50%, -50%) scale(0);
-            }
-
-            80% {
-                transform: translate(-50%, -50%) scale(1.2);
-            }
-
-            100% {
-                transform: translate(-50%, -50%) scale(1);
+            .step-card {
+                padding: 15px;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="bg-pattern"></div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📸 Sube tus Fotos</h1>
+            <p>Comparte tus momentos increíbles</p>
+        </div>
 
-    <div class="status-indicator">
-        🟢 Sistema Activo
-    </div>
+        <!-- Paso 1: WiFi -->
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-title">Conecta al WiFi</div>
+            <div class="step-subtitle">Red: {{ wifi_ssid }}</div>
 
-    <div class="qr-container">
-        <div class="container-content">
-            <div class="header">
-                <h1>📸 Comparte Fotos!</h1>
-                <p>¡Conecta y comparte todos los momentos increíbles!</p>
+            <div class="qr-wrapper">
+                <img src="{{ qr_wifi_path }}" alt="QR WiFi">
             </div>
 
-            <div class="instructions">
-                <h2>🚀 ¿Cómo Compartir tus Fotos?</h2>
-
-                <!-- PASO 1: WiFi QR -->
-                <div class="step" style="margin-bottom: 40px;">
-                    <div class="step-number">1</div>
-                    <div class="step-text" style="font-size: 1.3em; margin-bottom: 20px;">
-                        <strong>Conecta al WiFi</strong><br>
-                        <span style="font-size: 0.8em; color: var(--text-secondary);">
-                            Red: {{ wifi_ssid }}
-                        </span>
-                    </div>
-                    <div class="qr-code" style="margin-top: 20px;">
-                        <div class="scan-line"></div>
-                        <img src="{{ qr_wifi_path }}" alt="QR WiFi" style="width: 240px; height: 240px;">
-                    </div>
-                    <p style="font-size: 0.9em; color: var(--accent-cyan); margin-top: 15px;">
-                        📱 Escanea con tu cámara → Acepta conectar
-                    </p>
-                </div>
-
-                <div style="height: 2px; background: linear-gradient(90deg, transparent, var(--accent-purple), transparent); margin: 40px 0;"></div>
-
-                <!-- PASO 2: URL QR -->
-                <div class="step" style="margin-bottom: 40px;">
-                    <div class="step-number">2</div>
-                    <div class="step-text" style="font-size: 1.3em; margin-bottom: 20px;">
-                        <strong>Abre la App de Fotos</strong><br>
-                        <span style="font-size: 0.8em; color: var(--text-secondary);">
-                            Después de estar conectado al WiFi
-                        </span>
-                    </div>
-                    <div class="qr-code" style="margin-top: 20px;">
-                        <div class="scan-line"></div>
-                        <img src="{{ qr_url_path }}" alt="QR URL" style="width: 240px; height: 240px;">
-                    </div>
-                    <p style="font-size: 0.9em; color: var(--accent-green); margin-top: 15px;">
-                        📷 Escanea con tu cámara → Sube tus fotos
-                    </p>
-                </div>
-
-                <div class="url-display" style="margin-top: 50px;">
-                    <div class="label">O copia la URL manualmente:</div>
-                    <div class="url" id="upload-url" onclick="copyUrl()">{{ upload_url }}</div>
-                    <button class="copy-btn" onclick="copyUrl()">📋 Copiar Enlace</button>
-                </div>
+            <div class="scan-hint">
+                📱 Escanea → Acepta conectar
             </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Paso 2: URL -->
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-title">Abre la App de Fotos</div>
+            <div class="step-subtitle">Después de estar conectado</div>
+
+            <div class="qr-wrapper">
+                <img src="{{ qr_url_path }}" alt="QR URL">
+            </div>
+
+            <div class="scan-hint">
+                📷 Escanea → Sube tus fotos
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- URL Manual -->
+        <div class="url-section">
+            <div class="url-label">O copia la URL manualmente:</div>
+            <div class="url-display" id="upload-url" onclick="copyUrl()">
+                {{ upload_url }}
+            </div>
+            <button class="copy-btn" onclick="copyUrl()">📋 Copiar Enlace</button>
         </div>
     </div>
 
+    <!-- Toast notification -->
+    <div class="toast" id="toast">¡Enlace copiado!</div>
+
     <script>
-        class QRCodeManager {
-            constructor() {
-                this.uploadUrl = "{{ upload_url }}";
-                this.elements = {
-                    uploadUrl: document.getElementById('upload-url')
-                };
+        const uploadUrl = "{{ upload_url }}";
+        const toast = document.getElementById('toast');
 
-                this.init();
-            }
-
-            init() {
-                this.setupEventListeners();
-                this.startStatusCheck();
-            }
-
-            setupEventListeners() {
-                // Keyboard shortcuts
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'c' && e.ctrlKey) {
-                        e.preventDefault();
-                        this.copyUrl();
-                    }
-                });
-            }
-
-            async copyUrl() {
-                try {
-                    await navigator.clipboard.writeText(this.uploadUrl);
-                    this.showSuccessAnimation();
-                    this.showTemporaryMessage('¡Enlace copiado!');
-                } catch (error) {
-                    // Fallback for older browsers
-                    this.fallbackCopyUrl();
-                }
-            }
-
-            fallbackCopyUrl() {
-                const textArea = document.createElement('textarea');
-                textArea.value = this.uploadUrl;
-                document.body.appendChild(textArea);
-                textArea.select();
-
-                try {
-                    document.execCommand('copy');
-                    this.showSuccessAnimation();
-                    this.showTemporaryMessage('¡Enlace copiado!');
-                } catch (error) {
-                    this.showTemporaryMessage('Error al copiar', 'error');
-                }
-
-                document.body.removeChild(textArea);
-            }
-
-            showSuccessAnimation() {
-                // Show temporary success message
-                this.showTemporaryMessage('✓');
-            }
-
-            showTemporaryMessage(text, type = 'success') {
-                // Create temporary element to show message
-                const message = document.createElement('div');
-                message.style.cssText = `
-                    position: fixed;
-                    top: 30px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: ${type === 'success' ? 'var(--accent-green)' : 'var(--error-color)'};
-                    color: white;
-                    padding: 15px 25px;
-                    border-radius: 25px;
-                    font-family: inherit;
-                    font-weight: 500;
-                    z-index: 1000;
-                    animation: slideDown 0.3s ease-out;
-                `;
-                message.textContent = text;
-                document.body.appendChild(message);
-
-                setTimeout(() => {
-                    message.style.animation = 'slideUp 0.3s ease-in';
-                    setTimeout(() => {
-                        document.body.removeChild(message);
-                    }, 300);
-                }, 2000);
-            }
-
-            async startStatusCheck() {
-                // Check server status every 10 seconds
-                setInterval(async () => {
-                    try {
-                        const response = await fetch('/api/status');
-                        if (response.ok) {
-                            // Server working
-                            this.elements.qrImage.style.filter = 'contrast(1.1) brightness(1.1)';
-                        } else {
-                            throw new Error('Server error');
-                        }
-                    } catch (error) {
-                        // Connection error
-                        this.elements.qrImage.style.filter = 'contrast(0.8) brightness(0.8) grayscale(0.5)';
-                    }
-                }, 10000);
+        async function copyUrl() {
+            try {
+                await navigator.clipboard.writeText(uploadUrl);
+                showToast('¡Enlace copiado!');
+            } catch (error) {
+                // Fallback for older browsers
+                fallbackCopy();
             }
         }
 
-        // Global function for template
-        function copyUrl() {
-            window.qrManager.copyUrl();
+        function fallbackCopy() {
+            const textArea = document.createElement('textarea');
+            textArea.value = uploadUrl;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+                showToast('¡Enlace copiado!');
+            } catch (error) {
+                showToast('Error al copiar', true);
+            }
+
+            document.body.removeChild(textArea);
         }
 
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            window.qrManager = new QRCodeManager();
+        function showToast(message, isError = false) {
+            toast.textContent = message;
+            toast.style.display = 'block';
+            toast.style.background = isError ? '#ef4444' : '#10b981';
+
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
+        }
+
+        // Keyboard shortcut: Ctrl+C to copy
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'c' && e.ctrlKey) {
+                e.preventDefault();
+                copyUrl();
+            }
         });
-
-        // Add CSS animations via JavaScript
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideDown {
-                0% { transform: translateX(-50%) translateY(-30px); opacity: 0; }
-                100% { transform: translateX(-50%) translateY(0); opacity: 1; }
-            }
-            @keyframes slideUp {
-                0% { transform: translateX(-50%) translateY(0); opacity: 1; }
-                100% { transform: translateX(-50%) translateY(-30px); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
     </script>
 </body>
 
