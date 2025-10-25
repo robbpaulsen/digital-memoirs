@@ -2,46 +2,55 @@
 
 ---
 
-## 🔴 URGENTE: Evento Piloto del Sábado - Testing Checklist
+## ✅ CAMBIO IMPLEMENTADO: Sistema de 2 QR Codes + HTTP 200 (25/10/2025 - 4:30 PM)
 
-**Fecha límite**: Viernes 25/10/2025 (antes del evento)
+### **Solución Implementada:**
 
-### ✅ FIX IMPLEMENTADO: Captive Portal HTTP 302 Redirect (25/10/2025 - 7:00 AM)
+**Sistema de 2 QR Codes:**
+- ✅ QR 1: WiFi (conexión automática a "MomentoMarco")
+- ✅ QR 2: URL (abre Chrome nativo con `/upload`)
+- ✅ Captive portal devuelve HTTP 200 para conexión automática SIN preguntar
 
-**Problema identificado:**
-- ❌ **Android cerraba CNA inmediatamente** - Los endpoints de captive portal respondían con `HTTP 200 OK`
-- Android interpretaba esto como "internet disponible" y cerraba el navegador cautivo (CNA)
-- Usuario tenía que presionar "USE AS IS" manualmente
-
-**Solución implementada:**
-- ✅ **Cambio de `HTTP 200` → `HTTP 302 Redirect` en todos los endpoints de captive portal**
-- ✅ Modificados 3 endpoints: `ios_captive_portal()`, `android_captive_portal()`, `windows_captive_portal()`
-- ✅ Ahora responden con `redirect(url_for('upload_page'))` en lugar de `render_template('upload.html')`
-
-**Cómo funciona ahora:**
-```
-1. Android solicita: GET /generate_204
-2. Flask responde: HTTP 302 Location: /upload
-3. Android detecta: "Portal cautivo activo"
-4. Android abre: CNA (navegador cautivo) en /upload
-5. Background polling: Continúa solicitando /generate_204 cada 5-10s
-6. Flask continúa: Respondiendo HTTP 302
-7. Android mantiene: CNA abierto (interpreta como "usuario autenticándose")
+**Endpoints Captive Portal (HTTP 200):**
+```python
+# Todos devuelven: make_response('OK', 200)
+- /hotspot-detect.html (iOS)
+- /generate_204 (Android)
+- /connecttest.txt (Windows)
 ```
 
-**Archivos modificados:**
-- `app.py:398-423` - Endpoints captive portal actualizados con HTTP 302 redirect
+**Flujo Esperado:**
+1. Usuario escanea QR WiFi → Conecta automáticamente SIN diálogo
+2. Usuario escanea QR URL → Chrome nativo abre `/upload`
+3. Usuario sube fotos ✅
 
-**Testing pendiente (12:00 PM - 25/10/2025):**
-- [ ] Probar con dispositivo Android real
-- [ ] Verificar que CNA se mantiene abierto automáticamente
-- [ ] Confirmar que NO requiere "USE AS IS" manual
-- [ ] Probar con iOS si está disponible
-- [ ] Monitorear logs de Flask durante testing
+**Archivos Modificados:**
+- `app.py` - Endpoints captive portal devuelven HTTP 200 OK
+- `templates/qr.html` - Opción A (Vertical Compacto) con 2 QR codes
+- `scripts/qr_option_b.html` - Opción B (Swipeable) - NO PRÁCTICA para eventos
+- `scripts/qr_option_c.html` - Opción C (Minimalista) - PENDIENTE rediseño dark theme
 
-**Rollback disponible:**
-- Backup en: `scripts/app-maybe-fixed.py` (versión de prueba)
-- Si falla: Revertir a versión anterior (pero NO debería ser necesario)
+**Testing Status:**
+- [x] Sistema de 2 QR codes funciona correctamente
+- [x] Chrome nativo abre automáticamente ✅
+- [ ] Verificar HTTP 200 conecta sin preguntar "red limitada"
+- [ ] Rediseñar Opción C con dark theme glassmorphism
+
+---
+
+## 📝 PENDIENTE: Instrucciones de Notificaciones (25/10/2025)
+
+**Contexto:**
+Si después del fix HTTP 200 algunos usuarios NO ven el navegador abrirse automáticamente después de conectarse al WiFi, considerar agregar instrucciones más explícitas.
+
+**Posibles mejoras futuras:**
+- Agregar aviso grande: "⚠️ Revisa tus notificaciones 🔔"
+- Hint: "La notificación NO hace ruido, revisa tu panel de notificaciones"
+- Instrucciones paso a paso más claras en los templates
+
+**Estado:** EN PAUSA - Primero validar si HTTP 200 resuelve el problema de conexión automática.
+
+**Decisión:** Si HTTP 200 funciona y conecta sin preguntar, NO necesitamos complicar las instrucciones.
 
 ---
 

@@ -432,36 +432,40 @@ def status():
 # ============================================================
 # CAPTIVE PORTAL DETECTION ENDPOINTS
 # ============================================================
-# NOTA (25/10/2025): Estos endpoints devuelven HTTP 204 para autenticación
-# silenciosa. El CNA no se abre, evitando confusión al usuario. El flujo es:
-# 1. Usuario se conecta al WiFi
+# NOTA (25/10/2025): Estos endpoints devuelven HTTP 200 para que el dispositivo
+# se conecte automáticamente SIN preguntar. El flujo es:
+# 1. Usuario escanea QR WiFi
 # 2. OS detecta portal y solicita estos endpoints en background
-# 3. Flask responde 204 = "Portal resuelto, sin intervención requerida"
-# 4. Usuario usa 2 QR codes manualmente (WiFi + URL)
+# 3. Flask responde 200 OK = "Portal accesible, conectar automáticamente"
+# 4. Dispositivo se conecta SIN mostrar diálogo "red limitada"
+# 5. Usuario escanea QR URL manualmente para abrir /upload
 
 @app.route('/hotspot-detect.html')
 @app.route('/library/test/success.html')
 def ios_captive_portal():
-    """iOS captive portal - Authenticate silently without opening browser"""
-    logger.info("🍎 iOS captive portal detected - authenticating silently (HTTP 204)")
-    # Return 204 No Content = Portal resolved, don't open CNA
-    return make_response('', 204)
+    """iOS captive portal - Return 200 OK for automatic connection"""
+    logger.info("🍎 iOS captive portal detected - returning HTTP 200 OK")
+    # Return 200 OK with minimal content
+    # iOS interprets as "portal accessible" and connects automatically
+    return make_response('OK', 200)
 
 @app.route('/generate_204')
 @app.route('/gen_204')
 def android_captive_portal():
-    """Android captive portal - Authenticate silently without opening browser"""
-    logger.info("🤖 Android captive portal detected - authenticating silently (HTTP 204)")
-    # Return 204 No Content = Portal resolved, don't open CNA
-    return make_response('', 204)
+    """Android captive portal - Return 200 OK for automatic connection"""
+    logger.info("🤖 Android captive portal detected - returning HTTP 200 OK")
+    # Return 200 OK with minimal content
+    # Android interprets as "portal accessible" and connects without asking
+    return make_response('OK', 200)
 
 @app.route('/connecttest.txt')
 @app.route('/ncsi.txt')
 def windows_captive_portal():
-    """Windows captive portal - Authenticate silently without opening browser"""
-    logger.info("🪟 Windows captive portal detected - authenticating silently (HTTP 204)")
-    # Return 204 No Content = Portal resolved, don't open CNA
-    return make_response('', 204)
+    """Windows captive portal - Return 200 OK for automatic connection"""
+    logger.info("🪟 Windows captive portal detected - returning HTTP 200 OK")
+    # Return 200 OK with minimal content
+    # Windows interprets as "portal accessible" and connects automatically
+    return make_response('OK', 200)
 
 def setup_file_watcher():
     """Setup file system watcher for uploads directory"""
