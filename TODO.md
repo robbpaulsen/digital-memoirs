@@ -6,35 +6,77 @@
 
 **Fecha límite**: Viernes 25/10/2025 (antes del evento)
 
-### ✅ Preparación Pre-Evento
+### ⚠️ ESTADO ACTUAL: Captive Portal Parcialmente Configurado (24/10/2025 - 11:00 PM)
 
-#### 1. Configuración Raspberry Pi (Mañana o Viernes)
-- [ ] **Acceder al Raspberry Pi vía SSH**
-  - `ssh pi@10.0.17.1`
-- [ ] **Ejecutar script de configuración captive portal**
-  - `cd /path/to/digital-memoirs`
-  - `sudo bash scripts/setup-captive-portal.sh`
-- [ ] **Verificar que dnsmasq esté corriendo**
-  - `sudo systemctl status dnsmasq`
-  - Debe mostrar: `active (running)`
-- [ ] **Probar resolución DNS**
-  - `nslookup captive.apple.com localhost`
-  - Debe resolver a: `10.0.17.1`
+**Configuración completada:**
+- ✅ dnsmasq configurado con DNS hijacking y wildcards
+- ✅ iptables configuradas con reglas PREROUTING para redirección
+- ✅ Flask con endpoints captive portal actualizados
+- ✅ Reglas persistentes guardadas
 
-#### 2. Verificación de Flask
-- [ ] **Código actualizado en Raspberry Pi**
-  - Copiar `app.py` actualizado con endpoints captive portal
-  - Copiar templates actualizados (`display.html`, `qr.html`)
-- [ ] **Probar que Flask inicie correctamente**
-  - `python app.py`
-  - Verificar que no haya errores
-  - Verificar logs muestran: "WiFi QR generated"
-- [ ] **Probar endpoints captive portal localmente**
-  - `curl http://localhost:5000/hotspot-detect.html`
-  - `curl http://localhost:5000/generate_204`
-  - Deben redirigir (código 302)
+**Problema pendiente:**
+- ❌ **Android NO detecta captive portal automáticamente**
+  - Abre navegador pero requiere "USE AS IS" manual
+  - No aparece notificación "Sign in to network"
+  - DNS funciona: `connectivitycheck.gstatic.com` → `10.0.17.1` ✅
+  - Endpoints responden código 200 correctamente ✅
+  - Causa probable: Android no reconoce la respuesta como captive portal válido
 
-#### 3. Testing con Dispositivos Reales
+**Plan B para el evento:**
+- Usar QR con URL directa: `http://10.0.17.1:5000/upload`
+- Instruir a usuarios que toquen "USE AS IS" en Android
+- iOS puede funcionar mejor (no probado aún)
+
+---
+
+## 🔧 TAREAS PENDIENTES: Captive Portal Android
+
+### Prioridad Alta (antes del evento)
+
+#### 1. Diagnosticar detección captive portal Android
+- [ ] **Investigar respuesta HTTP esperada por Android**
+  - Probar diferentes códigos de respuesta (200, 204, 302)
+  - Verificar headers específicos que Android necesita
+  - Comparar con captive portals funcionales (Starbucks, aeropuertos)
+
+- [ ] **Capturar tráfico HTTP del celular Android**
+  - Instalar tcpdump en Raspberry Pi: `sudo apt-get install tcpdump`
+  - Capturar tráfico: `sudo tcpdump -i wlan0 -w captive-debug.pcap`
+  - Analizar peticiones exactas que hace Android al conectarse
+
+- [ ] **Probar respuesta HTTP 204 real (No Content)**
+  - Modificar `/generate_204` para responder código 204 vacío
+  - Ver si Android prefiere 204 para confirmar internet vs 200 para portal
+
+- [ ] **Agregar más endpoints de conectividad Android**
+  - `/generate_204` ✅
+  - `/gen_204` ✅
+  - Agregar: `/mobile/status.php`
+  - Agregar: `/success.txt`
+  - Agregar: wildcard catch-all para cualquier dominio
+
+#### 2. Verificar configuración Raspberry Pi
+- [ ] **Acceder al Raspberry Pi**
+  - Verificar que dnsmasq sigue corriendo después de reinicio
+  - Verificar que iptables persisten después de reinicio: `sudo iptables -t nat -L`
+
+- [ ] **Probar resolución DNS desde celular**
+  - Instalar app "DNS Lookup" en Android
+  - Conectar al WiFi y verificar que `www.google.com` → `10.0.17.1`
+
+#### 3. Verificación de Flask
+- [x] **Código actualizado en Raspberry Pi** ✅
+  - `app.py` actualizado con endpoints captive portal mejorados
+  - Templates actualizados (`display.html`, `qr.html`)
+- [x] **Probar que Flask inicie correctamente** ✅
+  - `python app.py` funciona sin errores
+  - Logs muestran: "WiFi QR generated"
+- [x] **Probar endpoints captive portal localmente** ✅
+  - `curl http://localhost:5000/hotspot-detect.html` → 200 OK
+  - `curl http://localhost:5000/generate_204` → 200 OK
+  - Responden correctamente con HTML
+
+#### 4. Testing con Dispositivos Reales
 
 **Testing iOS (iPhone):**
 - [ ] Desconectar de WiFi "MomentoMarco"
@@ -45,12 +87,15 @@
 - [ ] **Verificar**: Puede subir fotos exitosamente
 
 **Testing Android:**
-- [ ] Desconectar de WiFi "MomentoMarco"
-- [ ] Escanear QR WiFi
-- [ ] **Verificar**: Se conecta automáticamente
-- [ ] **Verificar**: Aparece notificación "Sign in to Wi-Fi network"
-- [ ] **Verificar**: Al tocar notificación → abre navegador con `/upload`
-- [ ] **Verificar**: Puede subir fotos exitosamente
+- [x] Desconectar de WiFi "MomentoMarco" ✅
+- [x] Escanear QR WiFi ✅
+- [x] **Verificar**: Se conecta automáticamente ✅
+- [~] **Verificar**: Aparece notificación "Sign in to Wi-Fi network" ⚠️ PROBLEMA
+  - **Estado**: Abre navegador pero NO muestra notificación automática
+  - **Workaround**: Requiere tocar "USE AS IS" manualmente
+  - **Causa**: Android no reconoce respuesta HTTP como captive portal válido
+- [x] **Verificar**: Al seleccionar "USE AS IS" → cierra portal
+- [~] **Verificar**: Puede subir fotos ⚠️ Requiere navegar manualmente a `/upload`
 
 **Testing Fallback Manual:**
 - [ ] Conectar al WiFi manualmente
@@ -63,11 +108,13 @@
 - [ ] **Verificar slideshow se actualiza** con las nuevas fotos
 
 #### 5. Plan B / Rollback
-- [ ] **Guardar backup de configuración anterior**
-  - dnsmasq.conf backup ya creado por script
-- [ ] **Tener QR URL listo como fallback**
+- [x] **Guardar backup de configuración anterior** ✅
+  - dnsmasq.conf backup: `/etc/dnsmasq.conf.backup.YYYYMMDD_HHMMSS`
+  - iptables backup: `~/iptables-backup-YYYYMMDD_HHMMSS.txt`
+- [x] **Tener QR URL listo como fallback** ✅
   - Si captive portal falla: mostrar QR con URL directa
   - URL: `http://10.0.17.1:5000/upload`
+  - Instruir a usuarios Android: "Conectar a WiFi → Tocar 'USE AS IS' → Abrir navegador → Ir a URL"
 
 ---
 
@@ -100,20 +147,207 @@
 
 ### 🚨 Troubleshooting Rápido
 
-**Si captive portal no funciona:**
+**Si captive portal no funciona (Android):**
 1. Verificar dnsmasq: `sudo systemctl status dnsmasq`
-2. Reiniciar dnsmasq: `sudo systemctl restart dnsmasq`
-3. **PLAN B**: Mostrar QR con URL directa en `/qr` y pedir a usuarios conectarse manualmente primero
+2. Verificar DNS wildcard: `nslookup www.google.com localhost` → debe responder `10.0.17.1`
+3. Verificar iptables: `sudo iptables -t nat -L PREROUTING -n -v`
+4. Reiniciar dnsmasq: `sudo systemctl restart dnsmasq`
+5. **PLAN B ACTUAL**:
+   - Instruir a usuarios: "Al conectarse, tocar 'USE AS IS' en el navegador que aparece"
+   - O mostrar QR con URL directa: `http://10.0.17.1:5000/upload`
 
 **Si Flask crashea:**
 1. Revisar logs en terminal
 2. Reiniciar: `pkill -f app.py && python app.py`
 3. Verificar espacio en disco: `df -h`
+4. Verificar permisos: `ls -la uploads/`
 
 **Si slideshow no se actualiza:**
 1. Verificar watchdog está corriendo (logs de Flask)
 2. Verificar permisos carpeta uploads: `ls -la uploads/`
 3. Recargar página `/display` en navegador
+
+**Si iptables no persisten después de reinicio:**
+1. Verificar archivo: `cat /etc/iptables/rules.v4`
+2. Restaurar backup: `sudo cp ~/iptables-backup-*.txt /tmp/restore.txt && sudo iptables-restore < /tmp/restore.txt`
+3. Guardar nuevamente: `sudo iptables-save | sudo tee /etc/iptables/rules.v4`
+
+---
+
+## 📝 **Configuración Captive Portal Completada (24/10/2025)**
+
+### **Resumen de cambios implementados**
+
+Esta sección documenta la configuración completa del captive portal WiFi realizada el 24/10/2025 para el evento piloto del sábado.
+
+---
+
+### **1. Configuración dnsmasq (`/etc/dnsmasq.conf`)**
+
+**Ubicación**: `/etc/dnsmasq.conf`
+**Backup**: `/etc/dnsmasq.conf.backup.YYYYMMDD_HHMMSS`
+
+**Configuración agregada:**
+```bash
+# ============================================================
+# DIGITAL MEMOIRS - CAPTIVE PORTAL CONFIGURATION
+# Date: 2025-10-24
+# ============================================================
+
+# Interface to bind to
+interface=wlan0
+
+# DHCP configuration
+dhcp-range=10.0.17.2,10.0.17.254,255.255.255.0,24h
+dhcp-option=3,10.0.17.1    # Gateway
+dhcp-option=6,10.0.17.1    # DNS server
+
+# Captive portal DNS hijacking
+# Redirect all captive portal detection domains to our Flask server
+address=/captive.apple.com/10.0.17.1
+address=/www.apple.com/10.0.17.1
+address=/connectivitycheck.gstatic.com/10.0.17.1
+address=/clients3.google.com/10.0.17.1
+address=/www.msftconnecttest.com/10.0.17.1
+address=/www.msftncsi.com/10.0.17.1
+
+# Wildcard para capturar todos los dominios de Google
+address=/gstatic.com/10.0.17.1
+address=/.gstatic.com/10.0.17.1
+address=/google.com/10.0.17.1
+address=/.google.com/10.0.17.1
+address=/googleapis.com/10.0.17.1
+address=/.googleapis.com/10.0.17.1
+
+# Local domain resolution (optional)
+address=/digital-memoirs.local/10.0.17.1
+
+# Don't forward queries without a domain part
+domain-needed
+
+# Don't forward queries for private IP ranges
+bogus-priv
+
+# Enable DHCP logging (útil para debugging)
+log-dhcp
+```
+
+**Verificación:**
+```bash
+sudo systemctl status dnsmasq  # Debe mostrar "active (running)"
+nslookup connectivitycheck.gstatic.com localhost  # Debe responder 10.0.17.1
+nslookup www.google.com localhost  # Debe responder 10.0.17.1
+```
+
+---
+
+### **2. Configuración iptables (redirección HTTP y DNS)**
+
+**Backup**: `~/iptables-backup-YYYYMMDD_HHMMSS.txt`
+**Archivo persistente**: `/etc/iptables/rules.v4`
+
+**Reglas agregadas:**
+```bash
+# Redirigir peticiones DNS (puerto 53) al dnsmasq local
+sudo iptables -t nat -I PREROUTING -i wlan0 -p udp --dport 53 -j REDIRECT --to-ports 53
+sudo iptables -t nat -I PREROUTING -i wlan0 -p tcp --dport 53 -j REDIRECT --to-ports 53
+
+# Redirigir peticiones HTTP (puerto 80) al Flask (puerto 5000)
+sudo iptables -t nat -I PREROUTING -i wlan0 -p tcp --dport 80 -j REDIRECT --to-ports 5000
+```
+
+**Configuración final en `/etc/iptables/rules.v4`:**
+```
+*nat
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+-A PREROUTING -i wlan0 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 5000
+-A PREROUTING -i wlan0 -p tcp -m tcp --dport 53 -j REDIRECT --to-ports 53
+-A PREROUTING -i wlan0 -p udp -m udp --dport 53 -j REDIRECT --to-ports 53
+-A POSTROUTING -o eth0 -j MASQUERADE
+COMMIT
+```
+
+**Verificación:**
+```bash
+sudo iptables -t nat -L PREROUTING -n -v  # Ver reglas REDIRECT
+sudo iptables -t nat -L POSTROUTING -n -v  # Ver regla MASQUERADE
+```
+
+---
+
+### **3. Endpoints Flask actualizados (`app.py`)**
+
+**Endpoints agregados/modificados:**
+
+- `@app.route('/hotspot-detect.html')` → iOS captive portal (línea 398)
+- `@app.route('/library/test/success.html')` → iOS alternativo (línea 399)
+- `@app.route('/generate_204')` → Android captive portal (línea 405)
+- `@app.route('/gen_204')` → Android alternativo (línea 406)
+- `@app.route('/connecttest.txt')` → Windows captive portal (línea 437)
+- `@app.route('/ncsi.txt')` → Windows alternativo (línea 438)
+
+**Respuesta Android `/generate_204`:**
+- Código HTTP 200 con HTML auto-redirect
+- Headers: `Content-Type: text/html; charset=utf-8`
+- Headers: `Cache-Control: no-cache, no-store, must-revalidate`
+- Meta refresh: `<meta http-equiv="refresh" content="0; url=/upload">`
+- JavaScript fallback: `setTimeout(() => window.location.href = '/upload', 100)`
+
+---
+
+### **4. Estado actual y problemas conocidos**
+
+**✅ Funcionando correctamente:**
+- dnsmasq resolviendo DNS con wildcards
+- iptables redirigiendo HTTP puerto 80 → 5000
+- Flask respondiendo a endpoints captive portal
+- Configuración persistente después de reinicio
+
+**⚠️ Problema pendiente (Android):**
+- Android NO muestra notificación "Sign in to network" automáticamente
+- Abre navegador pero requiere tocar "USE AS IS" manualmente
+- Causa probable: Android no reconoce respuesta HTTP como captive portal válido
+- Workaround: Instruir a usuarios que toquen "USE AS IS"
+
+**✅ Plan B confirmado:**
+- QR con URL directa: `http://10.0.17.1:5000/upload`
+- Instrucciones: "Conectar a WiFi → Tocar 'USE AS IS' → Navegar a URL"
+
+---
+
+### **5. Comandos útiles para debugging**
+
+**Ver logs en tiempo real:**
+```bash
+# Logs de dnsmasq
+sudo journalctl -u dnsmasq -f
+
+# Logs de Flask (en terminal donde corre)
+python3 app.py
+
+# Tráfico iptables
+watch -n 1 'sudo iptables -t nat -L PREROUTING -n -v'
+```
+
+**Probar endpoints manualmente:**
+```bash
+curl -v http://localhost:5000/generate_204
+curl -v http://localhost:5000/hotspot-detect.html
+nslookup connectivitycheck.gstatic.com localhost
+```
+
+**Restaurar configuración:**
+```bash
+# Restaurar dnsmasq
+sudo cp /etc/dnsmasq.conf.backup.* /etc/dnsmasq.conf
+sudo systemctl restart dnsmasq
+
+# Restaurar iptables
+sudo iptables-restore < ~/iptables-backup-*.txt
+```
 
 ---
 
