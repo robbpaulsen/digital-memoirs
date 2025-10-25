@@ -398,48 +398,29 @@ def status():
 @app.route('/hotspot-detect.html')
 @app.route('/library/test/success.html')
 def ios_captive_portal():
-    """iOS captive portal detection - shows upload page"""
-    logger.info("🍎 iOS captive portal detected - showing /upload")
-    return render_template('upload.html')
+    """iOS captive portal detection - REDIRECTS to upload page"""
+    logger.info("🍎 iOS captive portal detected - redirecting to /upload")
+    # FIX: Use HTTP 302 redirect instead of HTTP 200 to keep CNA open
+    return redirect(url_for('upload_page'))
 
 @app.route('/generate_204')
 @app.route('/gen_204')
 def android_captive_portal():
-    """Android captive portal detection - returns HTML with auto-redirect"""
-    logger.info("🤖 Android captive portal detected - showing /upload")
-    # Android expects HTTP 200 with content to trigger captive portal
-    # Return HTML that auto-redirects to upload page
-    response = '''<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=/upload">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Memoirs</title>
-</head>
-<body>
-    <h2>Conectando a Digital Memoirs...</h2>
-    <p>Redirigiendo automáticamente...</p>
-    <script>
-        setTimeout(function() {
-            window.location.href = '/upload';
-        }, 100);
-    </script>
-</body>
-</html>'''
-    # Return with status 200 and specific headers for Android
-    from flask import make_response
-    resp = make_response(response, 200)
-    resp.headers['Content-Type'] = 'text/html; charset=utf-8'
-    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    return resp
+    """Android captive portal detection - REDIRECTS to upload page"""
+    logger.info("🤖 Android captive portal detected - redirecting to /upload")
+    # FIX: Use HTTP 302 redirect instead of HTTP 200
+    # This keeps Android CNA (Captive Network Assistant) open
+    # The background service continues polling /generate_204 and receives 302
+    # Android interprets this as "user still authenticating" and keeps portal open
+    return redirect(url_for('upload_page'))
 
 @app.route('/connecttest.txt')
 @app.route('/ncsi.txt')
 def windows_captive_portal():
-    """Windows captive portal detection - shows upload page"""
-    logger.info("🪟 Windows captive portal detected - showing /upload")
-    return render_template('upload.html')
+    """Windows captive portal detection - REDIRECTS to upload page"""
+    logger.info("🪟 Windows captive portal detected - redirecting to /upload")
+    # FIX: Use HTTP 302 redirect instead of HTTP 200 to keep portal open
+    return redirect(url_for('upload_page'))
 
 def setup_file_watcher():
     """Setup file system watcher for uploads directory"""

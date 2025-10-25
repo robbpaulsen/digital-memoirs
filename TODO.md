@@ -6,7 +6,46 @@
 
 **Fecha límite**: Viernes 25/10/2025 (antes del evento)
 
-### ⚠️ ESTADO ACTUAL: Captive Portal Parcialmente Configurado (24/10/2025 - 11:00 PM)
+### ✅ FIX IMPLEMENTADO: Captive Portal HTTP 302 Redirect (25/10/2025 - 7:00 AM)
+
+**Problema identificado:**
+- ❌ **Android cerraba CNA inmediatamente** - Los endpoints de captive portal respondían con `HTTP 200 OK`
+- Android interpretaba esto como "internet disponible" y cerraba el navegador cautivo (CNA)
+- Usuario tenía que presionar "USE AS IS" manualmente
+
+**Solución implementada:**
+- ✅ **Cambio de `HTTP 200` → `HTTP 302 Redirect` en todos los endpoints de captive portal**
+- ✅ Modificados 3 endpoints: `ios_captive_portal()`, `android_captive_portal()`, `windows_captive_portal()`
+- ✅ Ahora responden con `redirect(url_for('upload_page'))` en lugar de `render_template('upload.html')`
+
+**Cómo funciona ahora:**
+```
+1. Android solicita: GET /generate_204
+2. Flask responde: HTTP 302 Location: /upload
+3. Android detecta: "Portal cautivo activo"
+4. Android abre: CNA (navegador cautivo) en /upload
+5. Background polling: Continúa solicitando /generate_204 cada 5-10s
+6. Flask continúa: Respondiendo HTTP 302
+7. Android mantiene: CNA abierto (interpreta como "usuario autenticándose")
+```
+
+**Archivos modificados:**
+- `app.py:398-423` - Endpoints captive portal actualizados con HTTP 302 redirect
+
+**Testing pendiente (12:00 PM - 25/10/2025):**
+- [ ] Probar con dispositivo Android real
+- [ ] Verificar que CNA se mantiene abierto automáticamente
+- [ ] Confirmar que NO requiere "USE AS IS" manual
+- [ ] Probar con iOS si está disponible
+- [ ] Monitorear logs de Flask durante testing
+
+**Rollback disponible:**
+- Backup en: `scripts/app-maybe-fixed.py` (versión de prueba)
+- Si falla: Revertir a versión anterior (pero NO debería ser necesario)
+
+---
+
+### ⚠️ ESTADO ANTERIOR: Captive Portal Parcialmente Configurado (24/10/2025 - 11:00 PM)
 
 **Configuración completada:**
 - ✅ dnsmasq configurado con DNS hijacking y wildcards
@@ -14,18 +53,9 @@
 - ✅ Flask con endpoints captive portal actualizados
 - ✅ Reglas persistentes guardadas
 
-**Problema pendiente:**
-- ❌ **Android NO detecta captive portal automáticamente**
-  - Abre navegador pero requiere "USE AS IS" manual
-  - No aparece notificación "Sign in to network"
-  - DNS funciona: `connectivitycheck.gstatic.com` → `10.0.17.1` ✅
-  - Endpoints responden código 200 correctamente ✅
-  - Causa probable: Android no reconoce la respuesta como captive portal válido
-
-**Plan B para el evento:**
+**Plan B (si HTTP 302 no funciona):**
 - Usar QR con URL directa: `http://10.0.17.1:5000/upload`
-- Instruir a usuarios que toquen "USE AS IS" en Android
-- iOS puede funcionar mejor (no probado aún)
+- Instruir a usuarios que toquen "USE AS IS" en Android si es necesario
 
 ---
 
@@ -347,6 +377,50 @@ sudo systemctl restart dnsmasq
 
 # Restaurar iptables
 sudo iptables-restore < ~/iptables-backup-*.txt
+```
+
+---
+
+25/10/2025
+
+## ✅ **Captive Portal HTTP 302 Redirect Fix**
+
+### **Issue: Android CNA Cerraba Inmediatamente - HTTP 200 Response Bug**
+
+- **Status:** ✅ RESUELTO
+- **Descripción:** El navegador cautivo (CNA) de Android se cerraba inmediatamente después de conectarse al WiFi, requiriendo que el usuario presione "USE AS IS" manualmente
+- **Causa Raíz:** Los endpoints de captive portal respondían con `HTTP 200 OK` en lugar de `HTTP 302 Redirect`
+  - Android interpreta HTTP 200 como "internet disponible" → cierra CNA
+  - Android interpreta HTTP 302 como "portal cautivo activo" → mantiene CNA abierto
+- **Endpoints afectados:**
+  - `@app.route('/hotspot-detect.html')` - iOS
+  - `@app.route('/generate_204')` - Android
+  - `@app.route('/connecttest.txt')` - Windows
+- **Solución:** Cambiar de `render_template('upload.html')` → `redirect(url_for('upload_page'))`
+- **Resultado Esperado:**
+  - Android abre CNA automáticamente
+  - CNA navega a `/upload` sin intervención del usuario
+  - CNA permanece abierto mientras el usuario sube fotos
+  - NO requiere presionar "USE AS IS"
+- **Testing:** Pendiente para 12:00 PM (25/10/2025)
+- **Archivos Modificados:** `app.py:398-423`
+
+#### **Código Anterior (INCORRECTO):**
+```python
+def android_captive_portal():
+    logger.info("🤖 Android captive portal detected - showing /upload")
+    response = '''<!DOCTYPE html>...'''
+    resp = make_response(response, 200)  # ❌ HTTP 200 → Cierra CNA
+    return resp
+```
+
+#### **Código Nuevo (CORRECTO):**
+```python
+def android_captive_portal():
+    logger.info("🤖 Android captive portal detected - redirecting to /upload")
+    # FIX: Use HTTP 302 redirect instead of HTTP 200
+    # This keeps Android CNA (Captive Network Assistant) open
+    return redirect(url_for('upload_page'))  # ✅ HTTP 302 → Mantiene CNA abierto
 ```
 
 ---
