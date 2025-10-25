@@ -99,7 +99,7 @@ class UploadHandler(FileSystemEventHandler):
             filename = os.path.basename(file_path)
             
             # Wait a moment to ensure file is fully written
-            time.sleep(0.5)
+            time.sleep(0.8)
             
             if allowed_file(filename):
                 # Generate UUID filename while keeping extension
