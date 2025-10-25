@@ -393,27 +393,43 @@ def status():
 # CAPTIVE PORTAL DETECTION ENDPOINTS
 # ============================================================
 # These endpoints intercept OS-level captive portal checks
-# and redirect users to the upload page automatically
+# and automatically open the upload page in captive portal browser
 
 @app.route('/hotspot-detect.html')
 @app.route('/library/test/success.html')
 def ios_captive_portal():
-    """iOS captive portal detection - redirects to upload page"""
-    logger.info("🍎 iOS captive portal detected - redirecting to /upload")
-    return redirect('/upload', code=302)
+    """iOS captive portal detection - shows upload page"""
+    logger.info("🍎 iOS captive portal detected - showing /upload")
+    return render_template('upload.html')
 
 @app.route('/generate_204')
+@app.route('/connectivitycheck.gstatic.com/generate_204')
 def android_captive_portal():
-    """Android captive portal detection - redirects to upload page"""
-    logger.info("🤖 Android captive portal detected - redirecting to /upload")
-    return redirect('/upload', code=302)
+    """Android captive portal detection - returns HTML with auto-redirect"""
+    logger.info("🤖 Android captive portal detected - showing /upload")
+    # Android expects HTTP 200 with content, not 204
+    # Return HTML that auto-redirects to upload page
+    return '''
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="0; url=/upload">
+    <title>Conectando...</title>
+</head>
+<body>
+    <h2>Redirigiendo a Digital Memoirs...</h2>
+    <script>window.location.href = '/upload';</script>
+</body>
+</html>
+''', 200
 
 @app.route('/connecttest.txt')
 @app.route('/ncsi.txt')
 def windows_captive_portal():
-    """Windows captive portal detection - redirects to upload page"""
-    logger.info("🪟 Windows captive portal detected - redirecting to /upload")
-    return redirect('/upload', code=302)
+    """Windows captive portal detection - shows upload page"""
+    logger.info("🪟 Windows captive portal detected - showing /upload")
+    return render_template('upload.html')
 
 def setup_file_watcher():
     """Setup file system watcher for uploads directory"""
