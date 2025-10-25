@@ -43,14 +43,15 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def cleanup_qr_code():
-    """Remove QR code file if it exists"""
-    qr_path = "static/qr_code.png"
+    """Remove QR code files if they exist"""
+    qr_files = ["static/qr_wifi.png", "static/qr_url.png"]
     try:
-        if os.path.exists(qr_path):
-            os.remove(qr_path)
-            logger.info("🧹 Cleaned up QR code file")
+        for qr_path in qr_files:
+            if os.path.exists(qr_path):
+                os.remove(qr_path)
+        logger.info("🧹 Cleaned up QR code files")
     except Exception as e:
-        logger.error(f"⚠️ Error cleaning QR code file: {e}")
+        logger.error(f"⚠️ Error cleaning QR code files: {e}")
 
 def signal_handler(sig, frame):
     """Handle Ctrl+C gracefully"""
@@ -132,7 +133,7 @@ def update_image_list():
 
 def generate_wifi_qr(ssid="MomentoMarco", password="MarcoMomento2025", security="WPA"):
     """
-    Generate QR code for WiFi connection with captive portal redirect
+    Generate QR code for WiFi connection
 
     Args:
         ssid: WiFi network name
@@ -152,7 +153,7 @@ def generate_wifi_qr(ssid="MomentoMarco", password="MarcoMomento2025", security=
         qr.make(fit=True)
 
         qr_img = qr.make_image(fill_color="navy", back_color="white")
-        qr_path = "static/qr_code.png"
+        qr_path = "static/qr_wifi.png"
         os.makedirs("static", exist_ok=True)
         qr_img.save(qr_path)
 
@@ -160,6 +161,32 @@ def generate_wifi_qr(ssid="MomentoMarco", password="MarcoMomento2025", security=
         return qr_path
     except Exception as e:
         logger.error(f"Error generating WiFi QR code: {e}")
+        return None
+
+def generate_url_qr(url):
+    """
+    Generate QR code for direct URL access
+
+    Args:
+        url: The URL to encode in QR code
+
+    Returns:
+        Path to generated QR code image
+    """
+    try:
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(url)
+        qr.make(fit=True)
+
+        qr_img = qr.make_image(fill_color="navy", back_color="white")
+        qr_path = "static/qr_url.png"
+        os.makedirs("static", exist_ok=True)
+        qr_img.save(qr_path)
+
+        logger.info(f"🔗 URL QR generated: {url}")
+        return qr_path
+    except Exception as e:
+        logger.error(f"Error generating URL QR code: {e}")
         return None
 
 @app.route('/')
@@ -170,37 +197,50 @@ def display():
         # Get local IP for logging
         local_ip = get_local_ip()
 
-        # Generate WiFi QR code (users will auto-connect and get redirected via captive portal)
-        qr_path = generate_wifi_qr()
+        # Generate BOTH QR codes
+        qr_wifi_path = generate_wifi_qr()
+        upload_url = f"http://{local_ip}:5000/upload"
+        qr_url_path = generate_url_qr(upload_url)
 
         # Info for display template
         wifi_ssid = "MomentoMarco"
-        upload_url = f"http://{local_ip}:5000/upload"
 
         logger.info(f"🌐 Server accessible at: http://{local_ip}:5000")
         logger.info(f"📱 WiFi SSID: {wifi_ssid}")
         logger.info(f"📱 Upload URL: {upload_url}")
+        logger.info(f"📱 Generated 2 QR codes: WiFi + URL")
 
-        return render_template('display.html', qr_path=qr_path, upload_url=upload_url, wifi_ssid=wifi_ssid)
+        return render_template('display.html',
+                             qr_wifi_path=qr_wifi_path,
+                             qr_url_path=qr_url_path,
+                             upload_url=upload_url,
+                             wifi_ssid=wifi_ssid)
     except Exception as e:
         logger.error(f"Error in display route: {e}")
         return f"Error: {str(e)}", 500
 
 @app.route('/qr')
 def qr():
-    """WiFi QR code only page - cleaner for guests to scan"""
+    """QR codes page - WiFi + URL for guests to scan"""
     try:
         # Get local IP for logging
         local_ip = get_local_ip()
 
-        # Generate WiFi QR code
-        qr_path = generate_wifi_qr()
+        # Generate BOTH QR codes
+        qr_wifi_path = generate_wifi_qr()
+        upload_url = f"http://{local_ip}:5000/upload"
+        qr_url_path = generate_url_qr(upload_url)
 
         # Info for QR template
         wifi_ssid = "MomentoMarco"
-        upload_url = f"http://{local_ip}:5000/upload"
 
-        return render_template('qr.html', qr_path=qr_path, upload_url=upload_url, wifi_ssid=wifi_ssid)
+        logger.info(f"📱 Generated 2 QR codes for scanning: WiFi + URL")
+
+        return render_template('qr.html',
+                             qr_wifi_path=qr_wifi_path,
+                             qr_url_path=qr_url_path,
+                             upload_url=upload_url,
+                             wifi_ssid=wifi_ssid)
     except Exception as e:
         logger.error(f"Error in qr route: {e}")
         return f"Error: {str(e)}", 500

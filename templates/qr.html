@@ -482,44 +482,51 @@
             <div class="header">
                 <h1>📸 Comparte Fotos!</h1>
                 <p>¡Conecta y comparte todos los momentos increíbles!</p>
-                <p style="font-size: 0.9em; margin-top: 10px; color: var(--accent-cyan);">
-                    WiFi: {{ wifi_ssid }} | Conexión automática
-                </p>
-            </div>
-
-            <div class="qr-section">
-                <div class="qr-code" id="qr-code">
-                    <div class="scan-line"></div>
-                    <img src="{{ qr_path }}" alt="QR para Cargar tus Fotos" id="qr-image">
-                    <div class="success-check" id="success-check">✓</div>
-                </div>
             </div>
 
             <div class="instructions">
-                <h2>🚀 ¿Cómo Conectar y Compartir?</h2>
+                <h2>🚀 ¿Cómo Compartir tus Fotos?</h2>
 
-                <div class="step">
+                <!-- PASO 1: WiFi QR -->
+                <div class="step" style="margin-bottom: 40px;">
                     <div class="step-number">1</div>
-                    <div class="step-text">Abre la aplicación de Cámara en tu teléfono</div>
+                    <div class="step-text" style="font-size: 1.3em; margin-bottom: 20px;">
+                        <strong>Conecta al WiFi</strong><br>
+                        <span style="font-size: 0.8em; color: var(--text-secondary);">
+                            Red: {{ wifi_ssid }}
+                        </span>
+                    </div>
+                    <div class="qr-code" style="margin-top: 20px;">
+                        <div class="scan-line"></div>
+                        <img src="{{ qr_wifi_path }}" alt="QR WiFi" style="width: 240px; height: 240px;">
+                    </div>
+                    <p style="font-size: 0.9em; color: var(--accent-cyan); margin-top: 15px;">
+                        📱 Escanea con tu cámara → Acepta conectar
+                    </p>
                 </div>
 
-                <div class="step">
+                <div style="height: 2px; background: linear-gradient(90deg, transparent, var(--accent-purple), transparent); margin: 40px 0;"></div>
+
+                <!-- PASO 2: URL QR -->
+                <div class="step" style="margin-bottom: 40px;">
                     <div class="step-number">2</div>
-                    <div class="step-text">Escanea el código QR - Te conectarás al WiFi automáticamente</div>
+                    <div class="step-text" style="font-size: 1.3em; margin-bottom: 20px;">
+                        <strong>Abre la App de Fotos</strong><br>
+                        <span style="font-size: 0.8em; color: var(--text-secondary);">
+                            Después de estar conectado al WiFi
+                        </span>
+                    </div>
+                    <div class="qr-code" style="margin-top: 20px;">
+                        <div class="scan-line"></div>
+                        <img src="{{ qr_url_path }}" alt="QR URL" style="width: 240px; height: 240px;">
+                    </div>
+                    <p style="font-size: 0.9em; color: var(--accent-green); margin-top: 15px;">
+                        📷 Escanea con tu cámara → Sube tus fotos
+                    </p>
                 </div>
 
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div class="step-text">Espera la notificación "Iniciar sesión en red" y tócala</div>
-                </div>
-
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <div class="step-text">¡Selecciona y sube tus mejores fotos!</div>
-                </div>
-
-                <div class="url-display">
-                    <div class="label">Si ya estás conectado al WiFi "{{ wifi_ssid }}":</div>
+                <div class="url-display" style="margin-top: 50px;">
+                    <div class="label">O copia la URL manualmente:</div>
                     <div class="url" id="upload-url" onclick="copyUrl()">{{ upload_url }}</div>
                     <button class="copy-btn" onclick="copyUrl()">📋 Copiar Enlace</button>
                 </div>
@@ -532,10 +539,7 @@
             constructor() {
                 this.uploadUrl = "{{ upload_url }}";
                 this.elements = {
-                    qrCode: document.getElementById('qr-code'),
-                    qrImage: document.getElementById('qr-image'),
-                    uploadUrl: document.getElementById('upload-url'),
-                    successCheck: document.getElementById('success-check')
+                    uploadUrl: document.getElementById('upload-url')
                 };
 
                 this.init();
@@ -547,11 +551,6 @@
             }
 
             setupEventListeners() {
-                // Click on QR for future features
-                this.elements.qrCode.addEventListener('click', () => {
-                    this.showSuccessAnimation();
-                });
-
                 // Keyboard shortcuts
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'c' && e.ctrlKey) {
@@ -590,10 +589,8 @@
             }
 
             showSuccessAnimation() {
-                this.elements.successCheck.style.display = 'flex';
-                setTimeout(() => {
-                    this.elements.successCheck.style.display = 'none';
-                }, 1500);
+                // Show temporary success message
+                this.showTemporaryMessage('✓');
             }
 
             showTemporaryMessage(text, type = 'success') {
