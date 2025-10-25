@@ -403,26 +403,36 @@ def ios_captive_portal():
     return render_template('upload.html')
 
 @app.route('/generate_204')
-@app.route('/connectivitycheck.gstatic.com/generate_204')
+@app.route('/gen_204')
 def android_captive_portal():
     """Android captive portal detection - returns HTML with auto-redirect"""
     logger.info("🤖 Android captive portal detected - showing /upload")
-    # Android expects HTTP 200 with content, not 204
+    # Android expects HTTP 200 with content to trigger captive portal
     # Return HTML that auto-redirects to upload page
-    return '''
-<!DOCTYPE html>
+    response = '''<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="refresh" content="0; url=/upload">
-    <title>Conectando...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Memoirs</title>
 </head>
 <body>
-    <h2>Redirigiendo a Digital Memoirs...</h2>
-    <script>window.location.href = '/upload';</script>
+    <h2>Conectando a Digital Memoirs...</h2>
+    <p>Redirigiendo automáticamente...</p>
+    <script>
+        setTimeout(function() {
+            window.location.href = '/upload';
+        }, 100);
+    </script>
 </body>
-</html>
-''', 200
+</html>'''
+    # Return with status 200 and specific headers for Android
+    from flask import make_response
+    resp = make_response(response, 200)
+    resp.headers['Content-Type'] = 'text/html; charset=utf-8'
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return resp
 
 @app.route('/connecttest.txt')
 @app.route('/ncsi.txt')
