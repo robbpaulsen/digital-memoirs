@@ -1,4 +1,4 @@
-<!-- scripts/qr_option_c.html - OPCIÓN C: Layout Minimalista Ultra-Compacto -->
+<!-- scripts/qr_option_c.html - OPCIÓN C: Layout Minimalista Ultra-Compacto con Dark Glassmorphism -->
 <!DOCTYPE html>
 <html lang="es">
 
@@ -7,6 +7,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sube tus Fotos - MomentoMarco</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --dark-bg-primary: #0a0a0f;
+            --dark-bg-secondary: #1a1a2e;
+            --dark-bg-tertiary: #16213e;
+            --accent-cyan: #00f5ff;
+            --accent-purple: #8b5cf6;
+            --accent-pink: #ec4899;
+            --accent-green: #10b981;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,51 +30,137 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+            background: var(--dark-bg-primary);
+            background-image:
+                radial-gradient(circle at 25% 25%, var(--dark-bg-tertiary) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, var(--dark-bg-secondary) 0%, transparent 50%);
+            color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Particles Background */
+        .background-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.6;
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+                opacity: 0.3;
+            }
         }
 
         .card {
-            background: white;
-            border-radius: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
             padding: 25px 20px;
             max-width: 400px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow:
+                0 25px 50px rgba(0, 0, 0, 0.5),
+                0 10px 30px rgba(0, 245, 255, 0.1),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--accent-cyan), var(--accent-purple), var(--accent-pink));
+            border-radius: 27px;
+            z-index: -1;
+            opacity: 0.4;
+            animation: borderGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
         }
 
         .header {
             text-align: center;
             margin-bottom: 25px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #f0f0f0;
+            border-bottom: 1px solid var(--glass-border);
         }
 
         .header h1 {
             font-size: 1.8em;
-            color: #333;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
             margin-bottom: 5px;
         }
 
         .header p {
             font-size: 0.9em;
-            color: #666;
+            color: var(--text-secondary);
         }
 
         .qr-section {
             text-align: center;
             margin-bottom: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 18px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                0 4px 16px rgba(0, 245, 255, 0.05);
+        }
+
+        .qr-section:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow:
+                0 12px 40px rgba(0, 245, 255, 0.2),
+                0 6px 20px rgba(139, 92, 246, 0.15);
+            border-color: rgba(0, 245, 255, 0.3);
         }
 
         .qr-label {
             font-size: 0.95em;
             font-weight: 600;
-            color: #333;
+            color: var(--text-primary);
             margin-bottom: 10px;
             display: flex;
             align-items: center;
@@ -68,72 +170,95 @@
 
         .qr-sublabel {
             font-size: 0.8em;
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 12px;
         }
 
         .qr-box {
-            background: #f8f8f8;
-            border: 2px solid #e0e0e0;
-            border-radius: 15px;
-            padding: 12px;
+            background: white;
+            border-radius: 12px;
+            padding: 10px;
             display: inline-block;
             margin-bottom: 8px;
+            box-shadow:
+                0 10px 40px rgba(0, 0, 0, 0.4),
+                0 5px 20px rgba(0, 245, 255, 0.2),
+                0 0 0 1px rgba(0, 245, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .qr-box:hover {
+            transform: scale(1.05);
+            box-shadow:
+                0 15px 50px rgba(0, 0, 0, 0.5),
+                0 8px 30px rgba(0, 245, 255, 0.4);
         }
 
         .qr-box img {
             width: 140px;
             height: 140px;
             display: block;
+            border-radius: 8px;
         }
 
         .qr-hint {
             font-size: 0.75em;
-            color: #667eea;
+            color: var(--accent-cyan);
             font-weight: 500;
         }
 
         .divider {
             height: 1px;
-            background: #e0e0e0;
+            background: linear-gradient(90deg, transparent, var(--accent-purple), transparent);
             margin: 20px 0;
         }
 
         .url-section {
-            background: #f8f8f8;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
             border-radius: 15px;
             padding: 15px;
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 1px rgba(255, 255, 255, 0.05);
         }
 
         .url-label {
             font-size: 0.85em;
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 10px;
             text-align: center;
         }
 
         .url-box {
-            background: white;
-            border: 2px solid #e0e0e0;
+            background: var(--dark-bg-secondary);
+            border: 1px solid var(--glass-border);
             border-radius: 10px;
             padding: 10px;
             font-size: 0.75em;
-            color: #667eea;
+            color: var(--accent-cyan);
             word-break: break-all;
             text-align: center;
             margin-bottom: 10px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .url-box:hover {
+            background: var(--dark-bg-tertiary);
+            border-color: var(--accent-cyan);
         }
 
         .url-box:active {
-            background: #f0f0f0;
-            border-color: #667eea;
+            transform: scale(0.98);
         }
 
         .copy-btn {
             width: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
             color: white;
             border: none;
             border-radius: 10px;
@@ -141,11 +266,18 @@
             font-size: 0.9em;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            box-shadow: 0 5px 15px rgba(0, 245, 255, 0.3);
+        }
+
+        .copy-btn:hover {
+            box-shadow: 0 8px 20px rgba(0, 245, 255, 0.5);
+            transform: translateY(-2px);
         }
 
         .copy-btn:active {
-            transform: scale(0.98);
+            transform: scale(0.98) translateY(0);
         }
 
         .toast {
@@ -153,7 +285,7 @@
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: #10b981;
+            background: var(--accent-green);
             color: white;
             padding: 12px 25px;
             border-radius: 25px;
@@ -162,12 +294,18 @@
             box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
             z-index: 1000;
             display: none;
-            animation: fadeIn 0.3s ease;
+            animation: slideDown 0.3s ease-out;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
         }
 
         @media (max-width: 380px) {
@@ -188,6 +326,9 @@
 </head>
 
 <body>
+    <!-- Animated Particles Background -->
+    <div class="background-particles" id="particles"></div>
+
     <div class="card">
         <!-- Header -->
         <div class="header">
@@ -231,6 +372,34 @@
     <div class="toast" id="toast">¡Copiado!</div>
 
     <script>
+        // Create animated particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+
+                // Random positioning
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+
+                // Random animation delay and duration
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+
+                // Random colors (cyan, purple, pink)
+                const colors = ['#00f5ff', '#8b5cf6', '#ec4899'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Initialize particles on page load
+        createParticles();
+
         const uploadUrl = "{{ upload_url }}";
         const toast = document.getElementById('toast');
 

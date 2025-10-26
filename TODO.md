@@ -2,6 +2,93 @@
 
 ---
 
+## ✅ SERVICIO SYSTEMD IMPLEMENTADO (25/10/2025 - 10:15 PM)
+
+### **Auto-inicio de Flask al Boot del Raspberry Pi**
+
+**Status:** ✅ COMPLETADO - Pendiente testing en Raspberry Pi
+
+**Archivos creados:**
+- `scripts/digital-memoirs.service` - Archivo de servicio systemd
+- `scripts/INSTALL_SERVICE.md` - Guía completa de instalación y troubleshooting
+
+**Configuración:**
+- **Delay:** 180 segundos (3 minutos) después del boot
+- **Usuario:** pi
+- **Ruta proyecto:** `/home/pi/Downloads/repos/digital-memoirs`
+- **Comando:** `/home/pi/.local/bin/uv run app.py`
+- **Auto-restart:** Sí (10 segundos después de fallo)
+- **Logs:** journalctl
+
+**Instalación rápida:**
+```bash
+cd /home/pi/Downloads/repos/digital-memoirs
+sudo cp scripts/digital-memoirs.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable digital-memoirs
+sudo systemctl start digital-memoirs
+```
+
+**Beneficios:**
+- ✅ No requiere SSH ni laptop el día del evento
+- ✅ Solo enchufar el Pi y esperar 3 minutos
+- ✅ Auto-recovery si Flask crashea
+- ✅ Logs centralizados en journalctl
+- ✅ Espera a que dnsmasq esté listo
+
+---
+
+## ✅ SOLUCIÓN FINAL CAPTIVE PORTAL (25/10/2025 - 9:45 PM)
+
+### **Sistema de 2 QR Codes SIN Captive Portal**
+
+**Problema resuelto:** Android mostraba "sin internet" con captive portal activo
+
+**Solución implementada:**
+1. ❌ **Endpoints captive portal comentados** en `app.py:432-463`
+2. ❌ **DNS hijacking comentado** en `/etc/dnsmasq.conf`
+3. ✅ **2 QR Codes independientes**:
+   - QR 1: WiFi → Conecta automáticamente SIN preguntar
+   - QR 2: URL → Abre Chrome nativo en `/upload`
+
+**Flujo funcional:**
+1. Usuario escanea QR WiFi → Conecta automáticamente ✅
+2. Usuario escanea QR URL → Chrome abre `/upload` ✅
+3. Usuario sube fotos → Todo funciona ✅
+
+**Razón técnica:**
+- Cuando endpoints NO existen (404), Android interpreta "no es portal cautivo, es WiFi normal"
+- DNS sin hijacking = Queries se resuelven normalmente
+- Resultado: Conexión automática sin diálogos molestos
+
+**Archivos modificados:**
+- `app.py` - Endpoints comentados con documentación
+- `/etc/dnsmasq.conf` - DNS hijacking comentado (en Raspberry Pi)
+
+---
+
+## ✅ MEJORAS VISUALES COMPLETADAS (25/10/2025 - 9:30 PM)
+
+### **Dark Theme Glassmorphism en todas las páginas**
+
+**templates/qr.html:** ✅
+- 50 partículas animadas de fondo
+- Sombras mejoradas con múltiples capas
+- Glassmorphism en step-cards y url-section
+- Hover effects con transformaciones y brillos cyan/purple
+- Borde brillante animado en QR wrappers
+
+**scripts/qr_option_c.html:** ✅
+- Convertido completamente a dark theme
+- Glassmorphism con backdrop-filter
+- 50 partículas animadas (cyan, purple, pink)
+- Borde brillante animado en container
+- Paleta de colores consistente con display.html
+
+**Estado:** Todas las páginas tienen tema oscuro consistente y efectos glassmorphism
+
+---
+
 ## ✅ CAMBIO IMPLEMENTADO: Sistema de 2 QR Codes + HTTP 200 (25/10/2025 - 4:30 PM)
 
 ### **Solución Implementada:**

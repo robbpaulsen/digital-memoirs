@@ -1,0 +1,54 @@
+# Digital Memoirs - Event Photo Sharing Service
+# Raspberry Pi OS Bookworm (Debian 12)
+#
+# Installation:
+#   sudo cp digital-memoirs.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable digital-memoirs
+#   sudo systemctl start digital-memoirs
+#
+# View logs:
+#   sudo journalctl -u digital-memoirs -f
+#
+# Status:
+#   sudo systemctl status digital-memoirs
+
+[Unit]
+Description=Digital Memoirs - Event Photo Sharing Application
+Documentation=https://github.com/yourusername/digital-memoirs
+After=network-online.target dnsmasq.service
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/Downloads/repos/digital-memoirs
+
+# Wait 3 minutes after boot to ensure wlan0 and dnsmasq are fully ready
+ExecStartPre=/bin/sleep 180
+
+# Start Flask using uv (full path required)
+# PATH is configured to include user's local bin where uv is installed
+Environment="PATH=/home/pi/.local/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/home/pi/.local/bin/uv run app.py
+
+# Restart configuration
+Restart=on-failure
+RestartSec=10
+
+# Logging configuration
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=digital-memoirs
+
+# Security hardening (optional - uncomment if needed)
+# ProtectSystem=full
+# PrivateTmp=yes
+# NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
