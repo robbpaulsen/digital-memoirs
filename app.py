@@ -430,42 +430,37 @@ def status():
         return jsonify({'status': 'error', 'error': str(e)}), 500
 
 # ============================================================
-# CAPTIVE PORTAL DETECTION ENDPOINTS
+# CAPTIVE PORTAL ENDPOINTS REMOVIDOS (25/10/2025)
 # ============================================================
-# NOTA (25/10/2025): Estos endpoints devuelven HTTP 200 para que el dispositivo
-# se conecte automáticamente SIN preguntar. El flujo es:
-# 1. Usuario escanea QR WiFi
-# 2. OS detecta portal y solicita estos endpoints en background
-# 3. Flask responde 200 OK = "Portal accesible, conectar automáticamente"
-# 4. Dispositivo se conecta SIN mostrar diálogo "red limitada"
-# 5. Usuario escanea QR URL manualmente para abrir /upload
+# RAZÓN: Los endpoints de captive portal causaban que Android mostrara
+# "no hay internet" o preguntara por "red limitada". Cuando estos endpoints
+# NO existen (404), Android/iOS conectan automáticamente sin preguntar.
+#
+# FLUJO ACTUAL (2 QR Codes):
+# 1. Usuario escanea QR WiFi → Conecta automáticamente
+# 2. Usuario escanea QR URL → Abre navegador nativo en /upload
+#
+# Los endpoints comentados abajo pueden ser útiles en el futuro si se
+# necesita implementar un portal cautivo real, pero por ahora es mejor
+# que Flask responda 404 a estas URLs.
 
-@app.route('/hotspot-detect.html')
-@app.route('/library/test/success.html')
-def ios_captive_portal():
-    """iOS captive portal - Return 200 OK for automatic connection"""
-    logger.info("🍎 iOS captive portal detected - returning HTTP 200 OK")
-    # Return 200 OK with minimal content
-    # iOS interprets as "portal accessible" and connects automatically
-    return make_response('OK', 200)
+# @app.route('/hotspot-detect.html')
+# @app.route('/library/test/success.html')
+# def ios_captive_portal():
+#     """iOS captive portal"""
+#     return make_response('OK', 200)
 
-@app.route('/generate_204')
-@app.route('/gen_204')
-def android_captive_portal():
-    """Android captive portal - Return 200 OK for automatic connection"""
-    logger.info("🤖 Android captive portal detected - returning HTTP 200 OK")
-    # Return 200 OK with minimal content
-    # Android interprets as "portal accessible" and connects without asking
-    return make_response('OK', 200)
+# @app.route('/generate_204')
+# @app.route('/gen_204')
+# def android_captive_portal():
+#     """Android captive portal"""
+#     return make_response('OK', 200)
 
-@app.route('/connecttest.txt')
-@app.route('/ncsi.txt')
-def windows_captive_portal():
-    """Windows captive portal - Return 200 OK for automatic connection"""
-    logger.info("🪟 Windows captive portal detected - returning HTTP 200 OK")
-    # Return 200 OK with minimal content
-    # Windows interprets as "portal accessible" and connects automatically
-    return make_response('OK', 200)
+# @app.route('/connecttest.txt')
+# @app.route('/ncsi.txt')
+# def windows_captive_portal():
+#     """Windows captive portal"""
+#     return make_response('OK', 200)
 
 def setup_file_watcher():
     """Setup file system watcher for uploads directory"""
