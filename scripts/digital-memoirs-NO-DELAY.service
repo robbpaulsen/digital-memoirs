@@ -1,0 +1,76 @@
+# Digital Memoirs - Event Photo Sharing Service (SIN DELAY - VERSIÓN ALTERNATIVA)
+# Raspberry Pi OS Bookworm (Debian 12)
+#
+# ESTA VERSIÓN ELIMINA EL DELAY DE 180 SEGUNDOS
+# Confía en que systemd espera a que network-online.target y dnsmasq estén listos
+# Es más rápida y elegante, pero requiere que la red esté configurada correctamente
+#
+# VENTAJAS:
+# - Arranque más rápido (~30 segundos en lugar de 3 minutos)
+# - No hay problemas de timeout con systemd
+# - Más "profesional" y confiable
+#
+# DESVENTAJAS:
+# - Si wlan0 tarda mucho en configurarse, puede fallar
+# - Requiere que network-online.target esté bien configurado
+#
+# Installation:
+#   sudo cp digital-memoirs-NO-DELAY.service /etc/systemd/system/digital-memoirs.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable digital-memoirs
+#   sudo systemctl start digital-memoirs
+#
+# View logs:
+#   sudo journalctl -u digital-memoirs -f
+#
+# Status:
+#   sudo systemctl status digital-memoirs
+
+[Unit]
+Description=Digital Memoirs - Event Photo Sharing Application
+Documentation=https://github.com/yourusername/digital-memoirs
+
+# Espera a que la red esté online y dnsmasq esté corriendo
+After=network-online.target dnsmasq.service wpa_supplicant.service
+Wants=network-online.target
+Requires=dnsmasq.service
+
+# Prevenir reintentos rápidos si falla
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/Downloads/repos/digital-memoirs
+
+# Timeouts normales (sin delay)
+TimeoutStartSec=60
+TimeoutStopSec=30
+
+# Pequeño delay de 10 segundos para asegurar que dnsmasq terminó de inicializar
+# (mucho más corto que los 180 segundos originales)
+ExecStartPre=/bin/sleep 10
+
+# Start Flask using uv (full path required)
+Environment="PATH=/home/pi/.local/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/home/pi/.local/bin/uv run app.py
+
+# Restart configuration - más agresivo
+Restart=always
+RestartSec=10
+
+# Logging configuration
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=digital-memoirs
+
+# Security hardening (optional - uncomment if needed)
+# ProtectSystem=full
+# PrivateTmp=yes
+# NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
