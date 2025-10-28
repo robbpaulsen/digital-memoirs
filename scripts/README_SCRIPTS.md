@@ -1,6 +1,6 @@
-# 📦 Scripts de Servicio systemd - Digital Memoirs
+# 📦 Scripts de Servicio systemd + Autostart - Digital Memoirs
 
-Guía rápida para instalar y diagnosticar el servicio systemd que inicia Digital Memoirs automáticamente al boot del Raspberry Pi.
+Guía rápida para instalar el servicio systemd Y el autostart del navegador que inicia Digital Memoirs automáticamente al boot del Raspberry Pi.
 
 ---
 
@@ -11,12 +11,15 @@ Guía rápida para instalar y diagnosticar el servicio systemd que inicia Digita
 cd /home/pi/Downloads/repos/digital-memoirs/scripts
 
 # 2. Dar permisos de ejecución
-chmod +x install_service.sh diagnose_service.sh
+chmod +x install_service.sh diagnose_service.sh setup_autostart.sh
 
-# 3. Instalar (te preguntará qué versión quieres)
+# 3. Instalar servicio systemd (Flask en background)
 ./install_service.sh
 
-# 4. ¡Listo! Ya arrancará automáticamente en cada boot
+# 4. Instalar autostart del navegador (abre Chromium automáticamente)
+./setup_autostart.sh
+
+# 5. ¡Listo! Flask + Navegador arrancarán automáticamente
 ```
 
 ---
@@ -35,8 +38,16 @@ chmod +x install_service.sh diagnose_service.sh
 
 | Script | Descripción | Uso |
 |--------|-------------|-----|
-| `install_service.sh` | 🎯 **Instalador automático** - Hace todo por ti | `./install_service.sh` |
+| `install_service.sh` | 🎯 **Instalador del servicio systemd** - Flask en background | `./install_service.sh` |
+| `setup_autostart.sh` | 🖥️ **Instalador del autostart del navegador** - Abre Chromium automáticamente | `./setup_autostart.sh` |
 | `diagnose_service.sh` | 🔍 **Diagnóstico completo** - Captura toda la info | `./diagnose_service.sh > report.txt` |
+| `autostart_browser.sh` | 🌐 **Script de autostart** - Espera Flask y abre Chromium | Ejecutado automáticamente |
+
+### 📄 Archivos de Configuración
+
+| Archivo | Descripción |
+|---------|-------------|
+| `digital-memoirs-autostart.desktop` | Archivo .desktop para autostart de LXDE |
 
 ### 📚 Documentación
 
@@ -44,6 +55,7 @@ chmod +x install_service.sh diagnose_service.sh
 |-----------|-----------|
 | `INSTALL_SERVICE.md` | Guía manual de instalación paso a paso |
 | `SOLUCION_TIMEOUT.md` | Explicación del problema del timeout y soluciones |
+| `AUTOSTART_BROWSER.md` | Explicación del autostart del navegador y solución al keyring |
 | `README_SCRIPTS.md` | Este archivo - Guía rápida |
 
 ---
@@ -176,14 +188,69 @@ Requires=dnsmasq.service  # Espera a dnsmasq obligatoriamente
 
 ---
 
+## 🖥️ Autostart del Navegador (NUEVO)
+
+### ¿Por qué necesitas esto?
+
+El servicio systemd inicia Flask en background, **PERO** el navegador NO se abre automáticamente porque:
+- El servicio corre sin sesión gráfica (headless)
+- `webbrowser.open()` en `app.py` requiere sesión de escritorio
+
+### Solución: Autostart del navegador
+
+```bash
+# Instalar autostart del navegador
+./setup_autostart.sh
+```
+
+**Esto configura**:
+1. ✅ Script que espera a Flask y abre Chromium en modo kiosk
+2. ✅ Archivo .desktop en `~/.config/autostart/`
+3. ✅ Chromium SIN solicitud de password del keyring
+
+### Flujo Completo con Autostart:
+
+```
+1. Boot del Raspberry Pi
+   ↓
+2. systemd inicia digital-memoirs.service (Flask en background)
+   ↓
+3. Usuario 'pi' hace login en el escritorio
+   ↓
+4. Autostart ejecuta autostart_browser.sh
+   ↓
+5. Script espera a que Flask esté disponible
+   ↓
+6. Chromium abre en modo kiosk mostrando /display
+   ↓
+7. ✅ TODO LISTO - Slideshow proyectándose
+```
+
+**Ver documentación completa**: `AUTOSTART_BROWSER.md`
+
+---
+
 ## ✅ Checklist Post-Instalación
 
+### Backend (Servicio systemd):
 - [ ] Servicio instalado: `systemctl is-enabled digital-memoirs` → `enabled`
 - [ ] Servicio corriendo: `systemctl is-active digital-memoirs` → `active`
 - [ ] Flask responde: `curl http://localhost:5000/api/status` → JSON
 - [ ] Logs limpios: `sudo journalctl -u digital-memoirs -n 20` → Sin errores
 - [ ] WiFi funcional: Teléfono se conecta a "MomentoMarco"
-- [ ] Testing de reinicio: `sudo reboot` → Todo arranca automáticamente
+
+### Frontend (Autostart del navegador):
+- [ ] Autostart instalado: `ls ~/.config/autostart/digital-memoirs-autostart.desktop`
+- [ ] Script ejecutable: `ls -la scripts/autostart_browser.sh`
+- [ ] Chromium flags: `cat ~/.config/chromium-flags.conf` contiene `--password-store=basic`
+- [ ] Test manual: `./autostart_browser.sh` abre Chromium
+
+### Testing Final:
+- [ ] Reboot completo: `sudo reboot`
+- [ ] Login en escritorio (GUI)
+- [ ] Chromium abre automáticamente (~3-5 min)
+- [ ] Muestra /display en modo kiosk
+- [ ] NO pide contraseña del keyring
 
 ---
 
@@ -287,9 +354,20 @@ Si tienes problemas:
 
 Con estos scripts tienes todo lo necesario para:
 
-- ✅ Instalar el servicio automáticamente
+- ✅ Instalar el servicio systemd (Flask en background)
+- ✅ Instalar autostart del navegador (Chromium en modo kiosk)
 - ✅ Diagnosticar problemas completamente
 - ✅ Elegir entre máxima confiabilidad o velocidad
-- ✅ Tener el sistema listo para el evento
+- ✅ Solucionar el problema del keyring de Chromium
+- ✅ Tener el sistema 100% automático para el evento
 
-**Día del evento**: Solo enchufa el Pi, espera 4 minutos, y todo funcionará automáticamente. 🚀
+**Día del evento**:
+1. 🔌 Enchufa el Raspberry Pi
+2. 🖥️ Haz login en el escritorio
+3. ⏳ Espera 3-5 minutos
+4. ✅ **TODO funciona automáticamente**:
+   - Flask corriendo en background
+   - Chromium abierto en pantalla completa
+   - Slideshow mostrándose en /display
+   - Sin pedir contraseñas
+   - Listo para proyectar 🚀

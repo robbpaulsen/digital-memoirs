@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Digital Memoirs Display
+Comment=Auto-open Chromium in kiosk mode showing slideshow
+Exec=/home/pi/Downloads/repos/digital-memoirs/scripts/autostart_browser.sh
+Terminal=false
+Hidden=false
+X-GNOME-Autostart-enabled=true
