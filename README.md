@@ -326,7 +326,7 @@ Contribuciones son bienvenidas. Por favor:
 
 ## 📝 Licencia
 
-Este proyecto es de código abierto.
+Apache License 2.0
 
 ---
 
