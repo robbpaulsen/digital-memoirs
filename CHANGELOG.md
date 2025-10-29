@@ -9,8 +9,213 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
-### En Testing
-- Captive Portal HTTP 302 Redirect Fix - Testing programado para 25/10/2025 12:00 PM
+### En Desarrollo
+- Configuración de SSD externo para almacenamiento de fotos
+- Implementación HTTPS para habilitar Camera API
+
+---
+
+## [0.3.0] - 2025-10-28
+
+### 🚀 Added - Deployment Automation
+
+#### systemd Service Auto-Start
+- **Feature**: Flask inicia automáticamente al boot del Raspberry Pi
+- **Configuración**:
+  - Delay de 180 segundos para esperar red y dnsmasq
+  - `TimeoutStartSec=240` para evitar timeout de systemd
+  - Auto-restart en caso de fallo
+  - Logs centralizados en journalctl
+- **Scripts creados**:
+  - `scripts/digital-memoirs-FIXED.service` - Servicio con timeout corregido (180s delay)
+  - `scripts/digital-memoirs-NO-DELAY.service` - Alternativa rápida (10s delay)
+  - `scripts/install_service.sh` - Instalador interactivo automatizado
+  - `scripts/SOLUCION_TIMEOUT.md` - Documentación del fix de timeout
+- **Archivos modificados**: Scripts directory
+- **Beneficios**:
+  - Plug & Play para eventos (solo enchufar Pi)
+  - No requiere SSH ni laptop el día del evento
+  - Recovery automático si Flask crashea
+
+#### Browser Autostart en Kiosk Mode
+- **Feature**: Chromium abre automáticamente mostrando slideshow en pantalla completa
+- **Configuración**:
+  - LXDE autostart desktop file
+  - Wait loop hasta que Flask esté disponible (timeout 5 minutos)
+  - Kiosk mode sin distracciones
+  - Fix de Chromium keyring password (`--password-store=basic`)
+- **Scripts creados**:
+  - `scripts/autostart_browser.sh` - Script de autostart con health checks
+  - `scripts/setup_autostart.sh` - Instalador automatizado
+  - `scripts/digital-memoirs-autostart.desktop` - Desktop entry file
+  - `scripts/AUTOSTART_BROWSER.md` - Documentación completa
+- **Archivos modificados**: Scripts directory, user autostart config
+- **Beneficios**:
+  - Interface lista para proyectar automáticamente
+  - Sin intervención manual requerida
+  - Sin prompts de contraseñas
+
+#### Herramientas de Diagnóstico
+- **Feature**: Scripts para troubleshooting y debugging
+- **Scripts creados**:
+  - `scripts/testing/diagnostics/diagnose_service.sh` - Diagnóstico completo de systemd y Flask
+  - `scripts/testing/network/network_diagnostic.py` - Diagnóstico de configuración de red
+- **Output**: Reportes detallados con estado del sistema
+- **Beneficios**:
+  - Identificación rápida de problemas
+  - Información completa para debugging
+  - Verificación de configuración
+
+### 🗂️ Changed - Project Organization
+
+#### Scripts Directory Restructure
+- **Cambio**: Reorganización completa del directorio scripts/
+- **Nueva estructura**:
+  ```
+  scripts/
+  ├── testing/
+  │   ├── diagnostics/       # Herramientas de diagnóstico
+  │   └── network/           # Diagnóstico de red
+  └── reference/
+      ├── hotfixes/          # Versiones anteriores de código
+      ├── templates/         # Templates experimentales
+      └── services/          # Archivos de servicio obsoletos
+  ```
+- **Documentación**: README.md en cada subdirectorio explicando propósito y contenido
+- **Beneficios**:
+  - Separación clara entre código activo y referencia
+  - Testing tools organizados
+  - Histórico preservado para futura referencia
+
+#### Documentation Overhaul
+- **Actualizado**: README.md completo con nueva arquitectura
+- **Actualizado**: TODO.md con estado de versión 0.3.0
+- **Actualizado**: CHANGELOG.md (este archivo)
+- **Pendiente**: CLAUDE.md con documentación técnica actualizada
+- **Agregado**: READMEs específicos en subdirectorios de scripts/
+- **Beneficios**:
+  - Documentación sincronizada con estado actual
+  - Guías claras de troubleshooting
+  - Histórico de decisiones técnicas
+
+### 🗑️ Removed - Cleanup
+
+#### Obsolete Scripts Deleted
+- **Eliminados**:
+  - `setup-captive-portal.sh` - Captive portal pausado
+  - `simple_hotspot.sh` - Approach obsoleto de hotspot
+  - `CAPTIVE_PORTAL_SETUP.md` - Documentación obsoleta
+  - Múltiples versiones experimentales de templates
+- **Razón**: Código no en uso, approaches abandonados
+- **Preservado**: Código valioso movido a `scripts/reference/` para futura referencia
+
+### 🔧 Fixed - Critical Bugs
+
+#### systemd Service Timeout Bug
+- **Problema**: Servicio colgaba 90s y fallaba con "Start operation timed out"
+- **Causa raíz**: `ExecStartPre=/bin/sleep 180` excedía timeout default de systemd (~90s)
+- **Solución**: Agregado `TimeoutStartSec=240` (180s delay + 60s margen)
+- **Archivos modificados**: `scripts/digital-memoirs-FIXED.service`
+- **Testing**: Verificado funcionando en Raspberry Pi
+- **Documentación**: `scripts/SOLUCION_TIMEOUT.md`
+
+#### Browser Auto-Open Failure
+- **Problema**: Flask iniciaba pero navegador no se abría, `webbrowser.open()` fallaba silenciosamente
+- **Causa raíz**: systemd service corre headless (sin X11 display session)
+- **Solución**: Autostart separado usando LXDE desktop session con health checks
+- **Archivos creados**: `scripts/autostart_browser.sh`, `scripts/setup_autostart.sh`
+- **Testing**: Verificado funcionando después de reboot
+- **Documentación**: `scripts/AUTOSTART_BROWSER.md`
+
+#### Chromium Keyring Password Prompt
+- **Problema**: Chromium pedía password de keyring en cada inicio
+- **Causa raíz**: Chromium intenta usar gnome-keyring por defecto
+- **Solución**: Flag `--password-store=basic` en chromium flags
+- **Archivos modificados**: `scripts/autostart_browser.sh`
+- **Testing**: Sin prompts de password después del fix
+
+### 📝 Documentation
+
+#### Comprehensive README Files
+- **Creados**:
+  - `scripts/README.md` - Overview de scripts y subdirectorios
+  - `scripts/testing/README.md` - Herramientas de testing
+  - `scripts/testing/diagnostics/README.md` - Uso de diagnose_service.sh
+  - `scripts/testing/network/README.md` - Uso de network_diagnostic.py
+  - `scripts/reference/README.md` - Propósito del código de referencia
+  - `scripts/reference/hotfixes/README.md` - Documentación de versiones anteriores
+  - `scripts/reference/templates/README.md` - Templates experimentales
+  - `scripts/reference/services/README.md` - Historia del bug de timeout
+- **Contenido**: Explicaciones detalladas, ejemplos de uso, advertencias
+
+#### Troubleshooting Guides
+- **Creados**:
+  - `scripts/SOLUCION_TIMEOUT.md` - Fix completo del timeout bug
+  - `scripts/AUTOSTART_BROWSER.md` - Setup y troubleshooting de autostart
+- **Actualizado**: README.md principal con sección de troubleshooting
+
+### ⚡ Performance
+
+#### Startup Optimization
+- **Servicio systemd**: Espera controlada de 180s para estabilidad de red
+- **Health checks**: Browser espera a que Flask esté ready antes de abrir
+- **Logging**: Todos los componentes logueando para debugging
+
+### 🎯 Testing
+
+#### Event Day Workflow Validated
+- **Flujo confirmado**:
+  1. Enchufar Raspberry Pi ✅
+  2. Login en desktop (usuario 'pi') ✅
+  3. Esperar 3-5 minutos ✅
+  4. Flask corriendo automáticamente ✅
+  5. Chromium mostrando slideshow en kiosk ✅
+  6. QR codes generados y listos ✅
+- **Testing real**: Verificado en Raspberry Pi después de reboot completo
+
+### 📊 Deployment Status
+
+- **systemd service**: ✅ Funcional en producción
+- **Browser autostart**: ✅ Funcional en producción
+- **Documentation**: ✅ Completa y actualizada
+- **Testing tools**: ✅ Disponibles y documentados
+- **Event ready**: ✅ Plug & Play sin intervención manual
+
+### 🔄 Migration Notes
+
+#### Upgrading from 0.2.0 to 0.3.0
+
+1. **Instalar servicio systemd**:
+   ```bash
+   cd /home/pi/Downloads/repos/digital-memoirs/scripts
+   chmod +x install_service.sh
+   ./install_service.sh
+   # Elegir Opción 1 (con delay 180s)
+   ```
+
+2. **Instalar browser autostart**:
+   ```bash
+   cd /home/pi/Downloads/repos/digital-memoirs/scripts
+   chmod +x setup_autostart.sh
+   ./setup_autostart.sh
+   # Responder 'Y' para probar inmediatamente
+   ```
+
+3. **Verificar instalación**:
+   ```bash
+   sudo reboot
+   # Después del reboot:
+   # - Login en desktop
+   # - Esperar 3-5 minutos
+   # - Todo debe iniciar automáticamente
+   ```
+
+4. **Troubleshooting** (si es necesario):
+   ```bash
+   cd scripts/testing/diagnostics
+   ./diagnose_service.sh > report.txt
+   cat report.txt
+   ```
 
 ---
 
@@ -255,6 +460,6 @@ Este proyecto usa [Semantic Versioning](https://semver.org/lang/es/):
 
 ---
 
-**Última actualización**: 2025-10-25 07:00 AM
-**Versión actual**: 0.2.0 (en testing)
-**Próximo evento piloto**: Sábado 25/10/2025 (tarde)
+**Última actualización**: 2025-10-28
+**Versión actual**: 0.3.0 (en producción)
+**Estado**: Plug & Play deployment listo para eventos

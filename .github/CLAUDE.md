@@ -1,10 +1,10 @@
 # CLAUDE.md - Digital Memoirs Technical Reference
 
 **Project**: Digital Memoirs - Event Photo Sharing Web App
-**Version**: 0.1.0
+**Version**: 0.3.0
 **Python**: >=3.11
 **Framework**: Flask 3.1.2
-**Last Updated**: 2025-10-21
+**Last Updated**: 2025-10-28
 
 ---
 
@@ -125,13 +125,24 @@ digital-memoirs/
 ├── uploads/                    # User-uploaded photos (UUID-named)
 │   └── [uuid].{jpg,png,gif,webp,heic,heif}
 │
-└── scripts/                    # Backup and diagnostic scripts
-    ├── app_debug.py            # Debug version of app.py
-    ├── network_diagnostic.py   # Network testing utilities
-    ├── display_original.html   # Pre-fix version
-    ├── upload_original.html    # Pre-fix version
-    ├── upload2.html            # Alternative upload version
-    └── qr_original.html        # Pre-fix version
+└── scripts/                    # Deployment and diagnostic scripts
+    ├── install_service.sh      # systemd service installer (interactive)
+    ├── setup_autostart.sh      # Browser autostart installer
+    ├── autostart_browser.sh    # Browser autostart script
+    ├── digital-memoirs-FIXED.service        # systemd service (180s delay)
+    ├── digital-memoirs-NO-DELAY.service     # systemd service (10s delay)
+    ├── digital-memoirs-autostart.desktop    # LXDE autostart config
+    │
+    ├── testing/                # Testing and diagnostic tools
+    │   ├── diagnostics/        # Service diagnostics
+    │   │   └── diagnose_service.sh
+    │   └── network/            # Network diagnostics
+    │       └── network_diagnostic.py
+    │
+    └── reference/              # Historical/reference code
+        ├── hotfixes/           # Previous versions of app.py/templates
+        ├── templates/          # Experimental templates
+        └── services/           # Obsolete service files
 ```
 
 ---
@@ -1089,6 +1100,485 @@ Before using captive portal in production:
 1. Verify dnsmasq config: `cat /etc/dnsmasq.conf | grep "DIGITAL MEMOIRS"`
 2. Verify iptables persistence: `cat /etc/iptables/rules.v4`
 3. Restore from backup: See `TODO.md:342-350`
+
+---
+
+## Deployment Automation (Version 0.3.0)
+
+### Overview
+
+Version 0.3.0 introduces complete Plug & Play deployment automation for Raspberry Pi. The system now boots automatically, starts Flask, and opens the browser in kiosk mode without any manual intervention.
+
+### Architecture
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│               Raspberry Pi Boot Sequence                     │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  1. System Boot                                              │
+│     │                                                        │
+│     ▼                                                        │
+│  2. Network Services Start                                   │
+│     ├─ dnsmasq (DHCP + DNS)                                 │
+│     └─ wpa_supplicant (WiFi)                                │
+│     │                                                        │
+│     ▼                                                        │
+│  3. Wait 180 seconds (ensure network stable)                │
+│     │                                                        │
+│     ▼                                                        │
+│  4. systemd starts digital-memoirs.service                  │
+│     ├─ ExecStartPre: /bin/sleep 180                         │
+│     ├─ TimeoutStartSec: 240 (critical fix)                  │
+│     └─ ExecStart: uv run app.py                             │
+│     │                                                        │
+│     ▼                                                        │
+│  5. Flask Server Running (port 5000)                        │
+│     ├─ QR codes generated                                   │
+│     ├─ Endpoints available                                  │
+│     └─ Watchdog monitoring uploads/                         │
+│                                                              │
+│  ═════════════════════════════════════════════════════════  │
+│                                                              │
+│  6. User Login to Desktop (LXDE)                            │
+│     │                                                        │
+│     ▼                                                        │
+│  7. LXDE Autostart Triggered                                │
+│     └─ ~/.config/autostart/digital-memoirs-autostart.desktop│
+│     │                                                        │
+│     ▼                                                        │
+│  8. autostart_browser.sh Executes                           │
+│     ├─ Wait for Flask (curl localhost:5000/api/status)     │
+│     ├─ Timeout: 5 minutes                                   │
+│     ├─ Polling interval: 5 seconds                          │
+│     └─ Log: ~/.digital-memoirs-autostart.log               │
+│     │                                                        │
+│     ▼                                                        │
+│  9. Chromium Opens in Kiosk Mode                            │
+│     ├─ --kiosk (fullscreen, no UI)                          │
+│     ├─ --password-store=basic (no keyring prompt)          │
+│     ├─ --noerrdialogs                                       │
+│     ├─ --disable-infobars                                   │
+│     └─ URL: http://localhost:5000/display                   │
+│                                                              │
+│  ✅ System Ready for Event                                  │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Component 1: systemd Service
+
+#### Files
+- `scripts/digital-memoirs-FIXED.service` - Production service (180s delay)
+- `scripts/digital-memoirs-NO-DELAY.service` - Fast boot alternative (10s delay)
+- `scripts/install_service.sh` - Interactive installer
+
+#### Configuration (FIXED.service)
+
+```ini
+[Unit]
+Description=Digital Memoirs - Event Photo Sharing
+Documentation=https://github.com/oroslan/digital-memoirs
+After=network-online.target dnsmasq.service wpa_supplicant.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/Downloads/repos/digital-memoirs
+
+# CRITICAL FIX (v0.3.0): Timeout must exceed sleep duration
+TimeoutStartSec=240   # 180s sleep + 60s margin
+TimeoutStopSec=30
+
+# Delay ensures network and dnsmasq are fully ready
+ExecStartPre=/bin/sleep 180
+
+# Start Flask with uv (handles venv automatically)
+ExecStart=/home/pi/.local/bin/uv run app.py
+
+# Auto-restart on failure
+Restart=on-failure
+RestartSec=10
+
+# Environment
+Environment="PYTHONUNBUFFERED=1"
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+#### Critical Bug Fix - systemd Timeout
+
+**Problem**: Service hung for 90 seconds then failed with "Start operation timed out"
+
+**Root Cause**:
+- `ExecStartPre=/bin/sleep 180` waited 180 seconds
+- systemd default `TimeoutStartSec` is ~90 seconds
+- Service exceeded timeout → systemd terminated it
+
+**Solution**:
+```ini
+TimeoutStartSec=240  # Must be > sleep duration (180s) + margin
+```
+
+**Verification**:
+```bash
+# Check configured timeout
+systemctl show digital-memoirs | grep Timeout
+# Should show: TimeoutStartUSec=4min (240 seconds)
+
+# Check service status
+sudo systemctl status digital-memoirs
+# Should show: active (running)
+```
+
+**Reference**: `scripts/SOLUCION_TIMEOUT.md`, `scripts/reference/services/README.md`
+
+#### Installation
+
+```bash
+cd /home/pi/Downloads/repos/digital-memoirs/scripts
+chmod +x install_service.sh
+./install_service.sh
+
+# Interactive menu:
+# [1] Install FIXED version (180s delay) - RECOMMENDED
+# [2] Install NO-DELAY version (10s delay) - Fast boot
+# [3] Check service status
+# [4] View service logs
+# [5] Uninstall service
+```
+
+**Manual installation**:
+```bash
+sudo cp digital-memoirs-FIXED.service /etc/systemd/system/digital-memoirs.service
+sudo systemctl daemon-reload
+sudo systemctl enable digital-memoirs
+sudo systemctl start digital-memoirs
+```
+
+#### Logging
+
+```bash
+# View logs in real-time
+sudo journalctl -u digital-memoirs -f
+
+# View last 50 lines
+sudo journalctl -u digital-memoirs -n 50
+
+# View logs since boot
+sudo journalctl -u digital-memoirs -b
+```
+
+### Component 2: Browser Autostart
+
+#### Files
+- `scripts/autostart_browser.sh` - Autostart script with health checks
+- `scripts/setup_autostart.sh` - Interactive installer
+- `scripts/digital-memoirs-autostart.desktop` - LXDE desktop entry
+
+#### Script: autostart_browser.sh
+
+```bash
+#!/bin/bash
+
+# Configuration
+FLASK_URL="http://localhost:5000/display"
+LOG_FILE="$HOME/.digital-memoirs-autostart.log"
+MAX_WAIT=300      # 5 minutes timeout
+WAIT_INTERVAL=5   # Check every 5 seconds
+
+# Wait for Flask to be available
+echo "$(date): Waiting for Flask server..." >> "$LOG_FILE"
+
+elapsed=0
+while [ $elapsed -lt $MAX_WAIT ]; do
+    if curl -s -o /dev/null -w "%{http_code}" "$FLASK_URL" | grep -q "200"; then
+        echo "$(date): Flask is available!" >> "$LOG_FILE"
+        break
+    fi
+
+    sleep $WAIT_INTERVAL
+    elapsed=$((elapsed + WAIT_INTERVAL))
+    echo "$(date): Still waiting... ($elapsed/$MAX_WAIT seconds)" >> "$LOG_FILE"
+done
+
+# Check if timeout exceeded
+if [ $elapsed -ge $MAX_WAIT ]; then
+    echo "$(date): ERROR - Flask did not start within $MAX_WAIT seconds" >> "$LOG_FILE"
+    exit 1
+fi
+
+# Wait an additional 3 seconds for stability
+sleep 3
+
+# Launch Chromium in kiosk mode
+echo "$(date): Launching Chromium..." >> "$LOG_FILE"
+
+chromium-browser \
+    --kiosk \
+    --password-store=basic \
+    --noerrdialogs \
+    --disable-infobars \
+    --disable-session-crashed-bubble \
+    --check-for-update-interval=31536000 \
+    "$FLASK_URL" >> "$LOG_FILE" 2>&1 &
+
+echo "$(date): Chromium launched successfully" >> "$LOG_FILE"
+```
+
+**Key Features**:
+- Health check loop: Polls Flask `/display` until available
+- Timeout: 5 minutes maximum wait
+- Logging: All events logged to `~/.digital-memoirs-autostart.log`
+- Chromium flags:
+  - `--kiosk`: Fullscreen mode, no browser UI
+  - `--password-store=basic`: Prevents keyring password prompt (critical fix)
+  - `--noerrdialogs`: Suppress error dialogs
+  - `--disable-infobars`: No information bars
+
+#### Desktop Entry: digital-memoirs-autostart.desktop
+
+```ini
+[Desktop Entry]
+Type=Application
+Name=Digital Memoirs Autostart
+Comment=Auto-opens Chromium with Digital Memoirs slideshow
+Exec=/home/pi/Downloads/repos/digital-memoirs/scripts/autostart_browser.sh
+Terminal=false
+Hidden=false
+X-GNOME-Autostart-enabled=true
+```
+
+**Installation location**: `~/.config/autostart/digital-memoirs-autostart.desktop`
+
+#### Installation
+
+```bash
+cd /home/pi/Downloads/repos/digital-memoirs/scripts
+chmod +x setup_autostart.sh
+./setup_autostart.sh
+
+# Prompts:
+# - Confirms project location
+# - Installs desktop entry file
+# - Configures Chromium flags
+# - Offers to test immediately (Y/N)
+```
+
+**Verification**:
+```bash
+# Check autostart is configured
+ls -la ~/.config/autostart/digital-memoirs-autostart.desktop
+
+# View autostart log
+tail -f ~/.digital-memoirs-autostart.log
+
+# Test manually
+cd /home/pi/Downloads/repos/digital-memoirs/scripts
+./autostart_browser.sh
+```
+
+#### Critical Bug Fix - Chromium Keyring Password
+
+**Problem**: Chromium prompted for keyring password on every launch
+
+**Root Cause**: Chromium tries to use gnome-keyring by default to store passwords
+
+**Solution**: `--password-store=basic` flag tells Chromium to use basic (file-based) password storage instead of keyring
+
+**Impact**: No password prompts, autostart works seamlessly
+
+**Reference**: `scripts/AUTOSTART_BROWSER.md`
+
+### Component 3: Diagnostic Tools
+
+#### diagnose_service.sh
+
+**Location**: `scripts/testing/diagnostics/diagnose_service.sh`
+
+**Purpose**: Comprehensive diagnostic report for systemd service and Flask
+
+**Output**:
+```
+=== DIGITAL MEMOIRS SERVICE DIAGNOSTIC ===
+Date: 2025-10-28 14:30:00
+
+=== SYSTEM INFO ===
+Hostname: raspberrypi
+OS: Raspberry Pi OS (Debian 12)
+Python: 3.11.2
+
+=== FILE CHECKS ===
+✓ Project directory exists
+✓ app.py found
+✓ uv binary found at /home/pi/.local/bin/uv
+
+=== SERVICE STATUS ===
+● digital-memoirs.service - Digital Memoirs - Event Photo Sharing
+     Loaded: loaded (/etc/systemd/system/digital-memoirs.service; enabled)
+     Active: active (running) since ...
+
+=== SERVICE LOGS (last 20 lines) ===
+[... recent logs ...]
+
+=== FLASK CONNECTIVITY ===
+✓ Flask responding on localhost:5000
+
+=== NETWORK INFO ===
+wlan0: 10.0.17.1/24
+...
+
+=== PYTHON DEPENDENCIES ===
+Flask==3.1.2
+qrcode==8.2
+...
+
+=== RECOMMENDATIONS ===
+✓ All checks passed
+```
+
+**Usage**:
+```bash
+cd scripts/testing/diagnostics
+./diagnose_service.sh > report.txt
+cat report.txt
+```
+
+#### network_diagnostic.py
+
+**Location**: `scripts/testing/network/network_diagnostic.py`
+
+**Purpose**: Diagnose network configuration and connectivity
+
+**Checks**:
+- wlan0 interface status and IP
+- dnsmasq DHCP configuration
+- DNS resolution testing
+- iptables rules for captive portal
+- Flask connectivity
+
+**Usage**:
+```bash
+cd scripts/testing/network
+python3 network_diagnostic.py
+```
+
+### Deployment Workflow
+
+#### Initial Setup (One-time)
+
+1. **Clone repository**:
+   ```bash
+   cd /home/pi/Downloads/repos
+   git clone <repo-url> digital-memoirs
+   cd digital-memoirs
+   ```
+
+2. **Install uv** (if not installed):
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   source ~/.bashrc
+   ```
+
+3. **Install dependencies**:
+   ```bash
+   uv sync
+   ```
+
+4. **Install systemd service**:
+   ```bash
+   cd scripts
+   chmod +x install_service.sh
+   ./install_service.sh
+   # Select Option 1 (FIXED version with 180s delay)
+   ```
+
+5. **Install browser autostart**:
+   ```bash
+   chmod +x setup_autostart.sh
+   ./setup_autostart.sh
+   # Answer 'Y' to test immediately
+   ```
+
+6. **Reboot and verify**:
+   ```bash
+   sudo reboot
+   # After reboot:
+   # 1. Login to desktop
+   # 2. Wait 3-5 minutes
+   # 3. Verify Flask service: sudo systemctl status digital-memoirs
+   # 4. Verify Chromium opened in kiosk mode
+   # 5. Verify /display slideshow is shown
+   ```
+
+#### Event Day (Plug & Play)
+
+1. **Plug in Raspberry Pi** → Power on
+2. **Wait for boot** → ~1 minute to GUI login
+3. **Login to desktop** → Username: pi
+4. **Wait 3-5 minutes** → systemd starts Flask (180s delay + startup time)
+5. **Chromium opens automatically** → Shows slideshow in kiosk mode
+6. **Project QR codes** → Navigate to `http://localhost:5000/qr` if needed
+7. **Monitor** (optional):
+   ```bash
+   # In terminal (SSH or local)
+   sudo journalctl -u digital-memoirs -f
+   tail -f ~/.digital-memoirs-autostart.log
+   ```
+
+#### Troubleshooting
+
+**Service not starting**:
+```bash
+# Check service status
+sudo systemctl status digital-memoirs
+
+# View logs
+sudo journalctl -u digital-memoirs -n 50
+
+# Run diagnostics
+cd scripts/testing/diagnostics
+./diagnose_service.sh > report.txt
+cat report.txt
+```
+
+**Browser not opening**:
+```bash
+# Check autostart configuration
+ls ~/.config/autostart/digital-memoirs-autostart.desktop
+
+# View autostart log
+tail -f ~/.digital-memoirs-autostart.log
+
+# Test manually
+cd /home/pi/Downloads/repos/digital-memoirs/scripts
+./autostart_browser.sh
+```
+
+**Service timeout error**:
+```bash
+# Verify timeout configuration
+systemctl show digital-memoirs | grep Timeout
+# Should show TimeoutStartUSec=4min
+
+# If incorrect, reinstall FIXED service
+cd scripts
+./install_service.sh
+# Select Option 1
+```
+
+### References
+
+- **systemd timeout fix**: `scripts/SOLUCION_TIMEOUT.md`
+- **Browser autostart setup**: `scripts/AUTOSTART_BROWSER.md`
+- **Service file documentation**: `scripts/reference/services/README.md`
+- **Diagnostic tools**: `scripts/testing/README.md`
+- **Version 0.3.0 changes**: `CHANGELOG.md`
 
 ---
 

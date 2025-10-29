@@ -1,835 +1,307 @@
 # TODO - Digital Memoirs
 
+**Versión actual:** 0.3.0
+**Última actualización:** 2025-10-28
+
 ---
 
-## ✅ SERVICIO SYSTEMD IMPLEMENTADO (25/10/2025 - 10:15 PM)
+## 🎯 Estado del Proyecto - Versión 0.3.0
 
-### **Auto-inicio de Flask al Boot del Raspberry Pi**
+### ✅ Completado (28/10/2025)
 
-**Status:** ✅ COMPLETADO - Pendiente testing en Raspberry Pi
+#### **Auto-inicio Completo Implementado**
+- ✅ Servicio systemd con timeout corregido (TimeoutStartSec=240)
+- ✅ Browser autostart en kiosk mode desde desktop session
+- ✅ Fix de Chromium keyring password (--password-store=basic)
+- ✅ Scripts de instalación automatizados (install_service.sh, setup_autostart.sh)
+- ✅ Herramientas de diagnóstico completas (diagnose_service.sh)
 
-**Archivos creados:**
-- `scripts/digital-memoirs.service` - Archivo de servicio systemd
-- `scripts/INSTALL_SERVICE.md` - Guía completa de instalación y troubleshooting
+#### **Organización del Proyecto**
+- ✅ Directorio scripts/ reorganizado con estructura clara
+- ✅ testing/diagnostics/ - Herramientas de diagnóstico de servicio
+- ✅ testing/network/ - Diagnóstico de red
+- ✅ reference/ - Código histórico y experimental archivado
+- ✅ Documentación completa en cada subdirectorio
 
-**Configuración:**
-- **Delay:** 180 segundos (3 minutos) después del boot
-- **Usuario:** pi
-- **Ruta proyecto:** `/home/pi/Downloads/repos/digital-memoirs`
-- **Comando:** `/home/pi/.local/bin/uv run app.py`
-- **Auto-restart:** Sí (10 segundos después de fallo)
-- **Logs:** journalctl
+#### **Funcionalidad Core**
+- ✅ Sistema de 2 QR codes (WiFi + URL) funcional
+- ✅ Slideshow con actualización en tiempo real
+- ✅ Upload de hasta 800 fotos por batch
+- ✅ Dark theme glassmorphism en todas las páginas
+- ✅ Botón de cámara deshabilitado (requiere HTTPS)
 
-**Instalación rápida:**
-```bash
-cd /home/pi/Downloads/repos/digital-memoirs
-sudo cp scripts/digital-memoirs.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable digital-memoirs
-sudo systemctl start digital-memoirs
-```
+---
+
+## 📋 Tareas Pendientes
+
+### 🔴 Prioridad Alta
+
+#### 1. Configurar Almacenamiento en SSD Externo
+**Estado:** Pendiente
+**Descripción:** Configurar la aplicación para usar SSD externo como unidad de almacenamiento de fotos en lugar del SD card del Raspberry Pi.
+
+**Tareas:**
+- [ ] Identificar punto de montaje del SSD externo
+- [ ] Configurar auto-mount del SSD al boot
+- [ ] Actualizar path de `uploads/` en app.py
+- [ ] Crear backup automático de fotos al SSD
+- [ ] Verificar permisos del directorio
+- [ ] Testing con watchdog para asegurar detección de nuevas fotos
+- [ ] Documentar configuración en README.md
 
 **Beneficios:**
-- ✅ No requiere SSH ni laptop el día del evento
-- ✅ Solo enchufar el Pi y esperar 3 minutos
-- ✅ Auto-recovery si Flask crashea
-- ✅ Logs centralizados en journalctl
-- ✅ Espera a que dnsmasq esté listo
+- Mayor capacidad de almacenamiento
+- Mejor performance de I/O
+- Protege el SD card del Pi
 
 ---
 
-## ✅ SOLUCIÓN FINAL CAPTIVE PORTAL (25/10/2025 - 9:45 PM)
+### 🟡 Prioridad Media
 
-### **Sistema de 2 QR Codes SIN Captive Portal**
+#### 2. Implementar HTTPS para Habilitar Camera API
+**Estado:** En pausa (funcionalidad deshabilitada)
+**Descripción:** Configurar Flask con HTTPS para permitir uso de getUserMedia API (botón de cámara).
 
-**Problema resuelto:** Android mostraba "sin internet" con captive portal activo
+**Opciones:**
+- Certificados self-signed con `ssl_context='adhoc'`
+- Certificados Let's Encrypt con dominio
+- Reverse proxy con nginx/apache
 
-**Solución implementada:**
-1. ❌ **Endpoints captive portal comentados** en `app.py:432-463`
-2. ❌ **DNS hijacking comentado** en `/etc/dnsmasq.conf`
-3. ✅ **2 QR Codes independientes**:
-   - QR 1: WiFi → Conecta automáticamente SIN preguntar
-   - QR 2: URL → Abre Chrome nativo en `/upload`
+**Archivos a modificar:**
+- `app.py` - Agregar ssl_context a app.run()
+- `templates/upload.html` - Habilitar botón de cámara
 
-**Flujo funcional:**
-1. Usuario escanea QR WiFi → Conecta automáticamente ✅
-2. Usuario escanea QR URL → Chrome abre `/upload` ✅
-3. Usuario sube fotos → Todo funciona ✅
+#### 3. Optimizar Performance en Raspberry Pi 3
+**Estado:** Continuo
+**Tareas:**
+- [ ] Profiling de Flask con 10+ usuarios simultáneos
+- [ ] Optimizar tamaño de partículas animadas
+- [ ] Considerar cache de thumbnails para slideshow
+- [ ] Testing de carga con 500+ fotos
+- [ ] Monitorear uso de memoria con múltiples uploads
 
-**Razón técnica:**
-- Cuando endpoints NO existen (404), Android interpreta "no es portal cautivo, es WiFi normal"
-- DNS sin hijacking = Queries se resuelven normalmente
-- Resultado: Conexión automática sin diálogos molestos
-
-**Archivos modificados:**
-- `app.py` - Endpoints comentados con documentación
-- `/etc/dnsmasq.conf` - DNS hijacking comentado (en Raspberry Pi)
-
----
-
-## ✅ MEJORAS VISUALES COMPLETADAS (25/10/2025 - 9:30 PM)
-
-### **Dark Theme Glassmorphism en todas las páginas**
-
-**templates/qr.html:** ✅
-- 50 partículas animadas de fondo
-- Sombras mejoradas con múltiples capas
-- Glassmorphism en step-cards y url-section
-- Hover effects con transformaciones y brillos cyan/purple
-- Borde brillante animado en QR wrappers
-
-**scripts/qr_option_c.html:** ✅
-- Convertido completamente a dark theme
-- Glassmorphism con backdrop-filter
-- 50 partículas animadas (cyan, purple, pink)
-- Borde brillante animado en container
-- Paleta de colores consistente con display.html
-
-**Estado:** Todas las páginas tienen tema oscuro consistente y efectos glassmorphism
+#### 4. Mejorar UX de Conexión WiFi
+**Estado:** Funcional pero mejorable
+**Tareas:**
+- [ ] Agregar instrucciones más visuales en QR page
+- [ ] Considerar segundo idioma (inglés)
+- [ ] Video tutorial corto para proyectar
+- [ ] QR codes más grandes para mejor escaneabilidad
 
 ---
 
-## ✅ CAMBIO IMPLEMENTADO: Sistema de 2 QR Codes + HTTP 200 (25/10/2025 - 4:30 PM)
+### 🟢 Prioridad Baja
 
-### **Solución Implementada:**
+#### 5. Estadísticas del Evento
+**Descripción:** Dashboard con métricas en tiempo real
 
-**Sistema de 2 QR Codes:**
-- ✅ QR 1: WiFi (conexión automática a "MomentoMarco")
-- ✅ QR 2: URL (abre Chrome nativo con `/upload`)
-- ✅ Captive portal devuelve HTTP 200 para conexión automática SIN preguntar
+**Features sugeridas:**
+- Total de fotos subidas
+- Gráfico de uploads por hora
+- Dispositivos conectados
+- Fotos más vistas (slideshow)
 
-**Endpoints Captive Portal (HTTP 200):**
-```python
-# Todos devuelven: make_response('OK', 200)
-- /hotspot-detect.html (iOS)
-- /generate_204 (Android)
-- /connecttest.txt (Windows)
-```
+#### 6. Galería de Fotos Subidas
+**Descripción:** Vista de todas las fotos subidas para el host
 
-**Flujo Esperado:**
-1. Usuario escanea QR WiFi → Conecta automáticamente SIN diálogo
-2. Usuario escanea QR URL → Chrome nativo abre `/upload`
-3. Usuario sube fotos ✅
+**Features sugeridas:**
+- Grid view de thumbnails
+- Descargar todas las fotos (ZIP)
+- Eliminar fotos individuales
+- Marcar fotos como favoritas
 
-**Archivos Modificados:**
-- `app.py` - Endpoints captive portal devuelven HTTP 200 OK
-- `templates/qr.html` - Opción A (Vertical Compacto) con 2 QR codes
-- `scripts/qr_option_b.html` - Opción B (Swipeable) - NO PRÁCTICA para eventos
-- `scripts/qr_option_c.html` - Opción C (Minimalista) - PENDIENTE rediseño dark theme
+#### 7. Configuración Dinámica
+**Descripción:** Interface para cambiar settings sin editar código
 
-**Testing Status:**
-- [x] Sistema de 2 QR codes funciona correctamente
-- [x] Chrome nativo abre automáticamente ✅
-- [ ] Verificar HTTP 200 conecta sin preguntar "red limitada"
-- [ ] Rediseñar Opción C con dark theme glassmorphism
+**Settings sugeridos:**
+- Nombre de WiFi
+- Duración de slideshow por foto
+- Límite de batch upload
+- Habilitar/deshabilitar camera
 
 ---
 
-## 📝 PENDIENTE: Instrucciones de Notificaciones (25/10/2025)
+## 📚 Backlog - Ideas Futuras
 
-**Contexto:**
-Si después del fix HTTP 200 algunos usuarios NO ven el navegador abrirse automáticamente después de conectarse al WiFi, considerar agregar instrucciones más explícitas.
+### Networking
+- [ ] Captive portal funcional para Android (investigar HTTP 302 + CNA)
+- [ ] Dominio .local amigable (digital-memoirs.local)
+- [ ] Modo "hotspot standalone" sin conexión a internet
 
-**Posibles mejoras futuras:**
-- Agregar aviso grande: "⚠️ Revisa tus notificaciones 🔔"
-- Hint: "La notificación NO hace ruido, revisa tu panel de notificaciones"
-- Instrucciones paso a paso más claras en los templates
+### Funcionalidad
+- [ ] Filtros de fotos (B&W, sepia, vintage)
+- [ ] Collage automático de fotos
+- [ ] Video support (MP4, MOV)
+- [ ] Música de fondo en slideshow
 
-**Estado:** EN PAUSA - Primero validar si HTTP 200 resuelve el problema de conexión automática.
+### Deployment
+- [ ] Docker container para desarrollo
+- [ ] Imagen completa de Raspberry Pi OS preconfigurada
+- [ ] Script de actualización OTA (over-the-air)
 
-**Decisión:** Si HTTP 200 funciona y conecta sin preguntar, NO necesitamos complicar las instrucciones.
-
----
-
-### ⚠️ ESTADO ANTERIOR: Captive Portal Parcialmente Configurado (24/10/2025 - 11:00 PM)
-
-**Configuración completada:**
-- ✅ dnsmasq configurado con DNS hijacking y wildcards
-- ✅ iptables configuradas con reglas PREROUTING para redirección
-- ✅ Flask con endpoints captive portal actualizados
-- ✅ Reglas persistentes guardadas
-
-**Plan B (si HTTP 302 no funciona):**
-- Usar QR con URL directa: `http://10.0.17.1:5000/upload`
-- Instruir a usuarios que toquen "USE AS IS" en Android si es necesario
+### UX/UI
+- [ ] Animaciones de entrada/salida de fotos
+- [ ] Efectos de transición personalizables
+- [ ] Tema claro/oscuro toggle
+- [ ] Modo presentación con controles remotos
 
 ---
 
-## 🔧 TAREAS PENDIENTES: Captive Portal Android
+## 🗄️ Histórico - Issues Resueltos
 
-### Prioridad Alta (antes del evento)
+### Versión 0.3.0 (28/10/2025)
 
-#### 1. Diagnosticar detección captive portal Android
-- [ ] **Investigar respuesta HTTP esperada por Android**
-  - Probar diferentes códigos de respuesta (200, 204, 302)
-  - Verificar headers específicos que Android necesita
-  - Comparar con captive portals funcionales (Starbucks, aeropuertos)
+#### ✅ Servicio systemd Timeout Bug
+**Problema:** Service colgaba 90s y fallaba con "Start operation timed out"
+**Causa:** `ExecStartPre=/bin/sleep 180` excedía timeout default (~90s)
+**Solución:** Agregado `TimeoutStartSec=240` en digital-memoirs-FIXED.service
+**Archivos:** scripts/digital-memoirs-FIXED.service, scripts/SOLUCION_TIMEOUT.md
 
-- [ ] **Capturar tráfico HTTP del celular Android**
-  - Instalar tcpdump en Raspberry Pi: `sudo apt-get install tcpdump`
-  - Capturar tráfico: `sudo tcpdump -i wlan0 -w captive-debug.pcap`
-  - Analizar peticiones exactas que hace Android al conectarse
+#### ✅ Browser No Abre Automáticamente
+**Problema:** Flask iniciaba pero navegador no se abría, `webbrowser.open()` fallaba
+**Causa:** systemd service corre headless (sin X11 display)
+**Solución:** Autostart separado con LXDE .desktop file + autostart_browser.sh
+**Archivos:** scripts/autostart_browser.sh, scripts/setup_autostart.sh
 
-- [ ] **Probar respuesta HTTP 204 real (No Content)**
-  - Modificar `/generate_204` para responder código 204 vacío
-  - Ver si Android prefiere 204 para confirmar internet vs 200 para portal
+#### ✅ Chromium Keyring Password Prompt
+**Problema:** Chromium pedía password de keyring en cada inicio
+**Causa:** Chromium usa gnome-keyring por defecto
+**Solución:** Flag `--password-store=basic` en autostart_browser.sh
+**Archivos:** scripts/autostart_browser.sh
 
-- [ ] **Agregar más endpoints de conectividad Android**
-  - `/generate_204` ✅
-  - `/gen_204` ✅
-  - Agregar: `/mobile/status.php`
-  - Agregar: `/success.txt`
-  - Agregar: wildcard catch-all para cualquier dominio
-
-#### 2. Verificar configuración Raspberry Pi
-- [ ] **Acceder al Raspberry Pi**
-  - Verificar que dnsmasq sigue corriendo después de reinicio
-  - Verificar que iptables persisten después de reinicio: `sudo iptables -t nat -L`
-
-- [ ] **Probar resolución DNS desde celular**
-  - Instalar app "DNS Lookup" en Android
-  - Conectar al WiFi y verificar que `www.google.com` → `10.0.17.1`
-
-#### 3. Verificación de Flask
-- [x] **Código actualizado en Raspberry Pi** ✅
-  - `app.py` actualizado con endpoints captive portal mejorados
-  - Templates actualizados (`display.html`, `qr.html`)
-- [x] **Probar que Flask inicie correctamente** ✅
-  - `python app.py` funciona sin errores
-  - Logs muestran: "WiFi QR generated"
-- [x] **Probar endpoints captive portal localmente** ✅
-  - `curl http://localhost:5000/hotspot-detect.html` → 200 OK
-  - `curl http://localhost:5000/generate_204` → 200 OK
-  - Responden correctamente con HTML
-
-#### 4. Testing con Dispositivos Reales
-
-**Testing iOS (iPhone):**
-- [ ] Desconectar de WiFi "MomentoMarco"
-- [ ] Escanear QR WiFi con app Cámara
-- [ ] **Verificar**: Se conecta automáticamente (2-5 segundos)
-- [ ] **Verificar**: Aparece notificación "Iniciar sesión en red"
-- [ ] **Verificar**: Al tocar notificación → abre navegador con `/upload`
-- [ ] **Verificar**: Puede subir fotos exitosamente
-
-**Testing Android:**
-- [x] Desconectar de WiFi "MomentoMarco" ✅
-- [x] Escanear QR WiFi ✅
-- [x] **Verificar**: Se conecta automáticamente ✅
-- [~] **Verificar**: Aparece notificación "Sign in to Wi-Fi network" ⚠️ PROBLEMA
-  - **Estado**: Abre navegador pero NO muestra notificación automática
-  - **Workaround**: Requiere tocar "USE AS IS" manualmente
-  - **Causa**: Android no reconoce respuesta HTTP como captive portal válido
-- [x] **Verificar**: Al seleccionar "USE AS IS" → cierra portal
-- [~] **Verificar**: Puede subir fotos ⚠️ Requiere navegar manualmente a `/upload`
-
-**Testing Fallback Manual:**
-- [ ] Conectar al WiFi manualmente
-- [ ] Abrir navegador e ir a cualquier URL (google.com)
-- [ ] **Verificar**: Redirige a `http://10.0.17.1:5000/upload`
-
-#### 4. Testing de Carga
-- [ ] **Subir 50 fotos simultáneas** → Verificar que se procesen
-- [ ] **Conectar 3+ dispositivos simultáneamente** → Verificar que todos funcionen
-- [ ] **Verificar slideshow se actualiza** con las nuevas fotos
-
-#### 5. Plan B / Rollback
-- [x] **Guardar backup de configuración anterior** ✅
-  - dnsmasq.conf backup: `/etc/dnsmasq.conf.backup.YYYYMMDD_HHMMSS`
-  - iptables backup: `~/iptables-backup-YYYYMMDD_HHMMSS.txt`
-- [x] **Tener QR URL listo como fallback** ✅
-  - Si captive portal falla: mostrar QR con URL directa
-  - URL: `http://10.0.17.1:5000/upload`
-  - Instruir a usuarios Android: "Conectar a WiFi → Tocar 'USE AS IS' → Abrir navegador → Ir a URL"
+#### ✅ Scripts Directory Desorganizado
+**Problema:** Mezcla de scripts activos, testing tools y código obsoleto
+**Solución:** Reorganización en testing/ y reference/ subdirectorios
+**Archivos:** Ver scripts/README.md para estructura completa
 
 ---
 
-### 📋 Checklist Día del Evento (Sábado)
+### Versión 0.2.0 (25/10/2025)
 
-#### Pre-Evento (2 horas antes)
-- [ ] **Iniciar Raspberry Pi**
-- [ ] **Verificar WiFi "MomentoMarco" está activo**
-  - `iwconfig` o revisar desde otro dispositivo
-- [ ] **Iniciar Flask**
-  - `cd /path/to/digital-memoirs`
-  - `python app.py`
-- [ ] **Verificar QR WiFi se generó**
-  - Abrir navegador en `http://10.0.17.1:5000/qr`
-- [ ] **Proyectar pantalla `/display` en TV/monitor**
-- [ ] **Probar con tu propio teléfono**
-  - Escanear QR → Conectar → Subir foto de prueba
+#### ✅ Sistema de 2 QR Codes Implementado
+**Solución:** QR WiFi + QR URL separados, captive portal deshabilitado
+**Razón:** Android mostraba "sin internet" con captive portal activo
+**Estado:** Funcional, usuarios conectan sin problemas
 
-#### Durante el Evento
-- [ ] **Monitorear logs de Flask** en terminal
-- [ ] **Verificar que slideshow muestre fotos nuevas**
-- [ ] **Tener laptop con acceso a RPi** por si surge algún problema
-
-#### Post-Evento
-- [ ] **Backup de todas las fotos subidas**
-  - `cp -r uploads/ /backup/evento-YYYYMMDD/`
-- [ ] **Documentar problemas encontrados** en TODO.md
+#### ✅ Captive Portal Investigación
+**Problema:** Android CNA (Captive Network Assistant) se cerraba inmediatamente
+**Intentos:** HTTP 200, HTTP 302, DNS hijacking, iptables
+**Resultado:** Captive portal pausado, se usa sistema de 2 QR codes
 
 ---
 
-### 🚨 Troubleshooting Rápido
+### Versión 0.1.0 (17-21/10/2025)
 
-**Si captive portal no funciona (Android):**
-1. Verificar dnsmasq: `sudo systemctl status dnsmasq`
-2. Verificar DNS wildcard: `nslookup www.google.com localhost` → debe responder `10.0.17.1`
-3. Verificar iptables: `sudo iptables -t nat -L PREROUTING -n -v`
-4. Reiniciar dnsmasq: `sudo systemctl restart dnsmasq`
-5. **PLAN B ACTUAL**:
-   - Instruir a usuarios: "Al conectarse, tocar 'USE AS IS' en el navegador que aparece"
-   - O mostrar QR con URL directa: `http://10.0.17.1:5000/upload`
+#### ✅ Camera Loop Bug
+**Problema:** Bucle infinito cuando se abre/cierra cámara y luego se abre galería
+**Solución:** Control de estado `isCameraOpen`, cleanup de streams, timeout 300ms
+**Archivos:** templates/upload.html
 
-**Si Flask crashea:**
-1. Revisar logs en terminal
-2. Reiniciar: `pkill -f app.py && python app.py`
-3. Verificar espacio en disco: `df -h`
-4. Verificar permisos: `ls -la uploads/`
+#### ✅ CSS Container Desalineado
+**Problema:** Slideshow no centraba correctamente, gradiente causaba lag
+**Solución:** `position: fixed`, `transform: translate(-50%, -50%)`, gradiente simplificado
+**Archivos:** templates/display.html
 
-**Si slideshow no se actualiza:**
-1. Verificar watchdog está corriendo (logs de Flask)
-2. Verificar permisos carpeta uploads: `ls -la uploads/`
-3. Recargar página `/display` en navegador
+#### ✅ Widget Orientation Mismatch
+**Problema:** Widgets horizontales no alineaban con slideshow rotado 90°
+**Solución:** `transform: rotate(90deg)` en ambos widgets
+**Archivos:** templates/display.html
 
-**Si iptables no persisten después de reinicio:**
-1. Verificar archivo: `cat /etc/iptables/rules.v4`
-2. Restaurar backup: `sudo cp ~/iptables-backup-*.txt /tmp/restore.txt && sudo iptables-restore < /tmp/restore.txt`
-3. Guardar nuevamente: `sudo iptables-save | sudo tee /etc/iptables/rules.v4`
+#### ✅ Cargas Masivas +800 Imágenes
+**Problema:** Falla al cargar más de 800 imágenes simultáneas
+**Solución:** `BATCH_UPLOAD_LIMIT = 800`, `ThreadPoolExecutor`, timeout 30s/archivo
+**Archivos:** app.py
 
----
+#### ✅ Camera Functionality Blocked
+**Problema:** getUserMedia API undefined en HTTP context
+**Causa:** Browsers bloquean camera API en HTTP (no localhost)
+**Solución:** Botón deshabilitado visualmente, requiere HTTPS para habilitar
+**Archivos:** templates/upload.html
 
-## 📝 **Configuración Captive Portal Completada (24/10/2025)**
-
-### **Resumen de cambios implementados**
-
-Esta sección documenta la configuración completa del captive portal WiFi realizada el 24/10/2025 para el evento piloto del sábado.
+#### ✅ Template Mismatch
+**Problema:** app.py intentaba servir `upload_fixed.html`, `display_fixed.html` (no existen)
+**Solución:** Corregidos nombres a upload.html, display.html, qr.html
+**Archivos:** app.py
 
 ---
 
-### **1. Configuración dnsmasq (`/etc/dnsmasq.conf`)**
+## 🧪 Testing Checklist
 
-**Ubicación**: `/etc/dnsmasq.conf`
-**Backup**: `/etc/dnsmasq.conf.backup.YYYYMMDD_HHMMSS`
+### Pre-Evento (2 horas antes)
+- [ ] Raspberry Pi enciende correctamente
+- [ ] Servicio systemd inicia Flask automáticamente (esperar 3-5 min)
+- [ ] Chromium abre en kiosk mode mostrando slideshow
+- [ ] WiFi "MomentoMarco" está activo y visible
+- [ ] QR codes se muestran correctamente en /qr
+- [ ] Proyector/TV conectado y funcionando
 
-**Configuración agregada:**
+### Testing con Dispositivo Real
+- [ ] Escanear QR WiFi → Conecta automáticamente
+- [ ] Escanear QR URL → Abre navegador en /upload
+- [ ] Subir 1 foto de prueba → Aparece en slideshow
+- [ ] Subir 10 fotos batch → Todas se procesan
+- [ ] Verificar performance del slideshow con 50+ fotos
+
+### Durante el Evento
+- [ ] Monitorear logs de Flask (journalctl -u digital-memoirs -f)
+- [ ] Verificar slideshow actualiza con fotos nuevas
+- [ ] Tener laptop con SSH al Pi por si surge problema
+- [ ] Documentar cualquier issue para post-mortem
+
+### Post-Evento
+- [ ] Backup de todas las fotos del directorio uploads/
+- [ ] Revisar logs para errores o warnings
+- [ ] Documentar issues encontrados en TODO.md
+- [ ] Actualizar CHANGELOG.md con lecciones aprendidas
+
+---
+
+## 🚨 Troubleshooting Rápido
+
+### Servicio no inicia después de reboot
 ```bash
-# ============================================================
-# DIGITAL MEMOIRS - CAPTIVE PORTAL CONFIGURATION
-# Date: 2025-10-24
-# ============================================================
-
-# Interface to bind to
-interface=wlan0
-
-# DHCP configuration
-dhcp-range=10.0.17.2,10.0.17.254,255.255.255.0,24h
-dhcp-option=3,10.0.17.1    # Gateway
-dhcp-option=6,10.0.17.1    # DNS server
-
-# Captive portal DNS hijacking
-# Redirect all captive portal detection domains to our Flask server
-address=/captive.apple.com/10.0.17.1
-address=/www.apple.com/10.0.17.1
-address=/connectivitycheck.gstatic.com/10.0.17.1
-address=/clients3.google.com/10.0.17.1
-address=/www.msftconnecttest.com/10.0.17.1
-address=/www.msftncsi.com/10.0.17.1
-
-# Wildcard para capturar todos los dominios de Google
-address=/gstatic.com/10.0.17.1
-address=/.gstatic.com/10.0.17.1
-address=/google.com/10.0.17.1
-address=/.google.com/10.0.17.1
-address=/googleapis.com/10.0.17.1
-address=/.googleapis.com/10.0.17.1
-
-# Local domain resolution (optional)
-address=/digital-memoirs.local/10.0.17.1
-
-# Don't forward queries without a domain part
-domain-needed
-
-# Don't forward queries for private IP ranges
-bogus-priv
-
-# Enable DHCP logging (útil para debugging)
-log-dhcp
+sudo systemctl status digital-memoirs
+sudo journalctl -u digital-memoirs -n 50
+cd scripts/testing/diagnostics
+./diagnose_service.sh > report.txt
 ```
 
-**Verificación:**
+### Browser no se abre automáticamente
 ```bash
-sudo systemctl status dnsmasq  # Debe mostrar "active (running)"
-nslookup connectivitycheck.gstatic.com localhost  # Debe responder 10.0.17.1
-nslookup www.google.com localhost  # Debe responder 10.0.17.1
+ls ~/.config/autostart/digital-memoirs-autostart.desktop
+tail -f ~/.digital-memoirs-autostart.log
+cd /home/pi/Downloads/repos/digital-memoirs/scripts
+./autostart_browser.sh
 ```
 
----
-
-### **2. Configuración iptables (redirección HTTP y DNS)**
-
-**Backup**: `~/iptables-backup-YYYYMMDD_HHMMSS.txt`
-**Archivo persistente**: `/etc/iptables/rules.v4`
-
-**Reglas agregadas:**
+### WiFi no visible
 ```bash
-# Redirigir peticiones DNS (puerto 53) al dnsmasq local
-sudo iptables -t nat -I PREROUTING -i wlan0 -p udp --dport 53 -j REDIRECT --to-ports 53
-sudo iptables -t nat -I PREROUTING -i wlan0 -p tcp --dport 53 -j REDIRECT --to-ports 53
-
-# Redirigir peticiones HTTP (puerto 80) al Flask (puerto 5000)
-sudo iptables -t nat -I PREROUTING -i wlan0 -p tcp --dport 80 -j REDIRECT --to-ports 5000
+ip addr show wlan0
+sudo systemctl status dnsmasq
+cd scripts/testing/network
+python3 network_diagnostic.py
 ```
 
-**Configuración final en `/etc/iptables/rules.v4`:**
-```
-*nat
-:PREROUTING ACCEPT [0:0]
-:INPUT ACCEPT [0:0]
-:OUTPUT ACCEPT [0:0]
-:POSTROUTING ACCEPT [0:0]
--A PREROUTING -i wlan0 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 5000
--A PREROUTING -i wlan0 -p tcp -m tcp --dport 53 -j REDIRECT --to-ports 53
--A PREROUTING -i wlan0 -p udp -m udp --dport 53 -j REDIRECT --to-ports 53
--A POSTROUTING -o eth0 -j MASQUERADE
-COMMIT
-```
-
-**Verificación:**
+### Flask crashea
 ```bash
-sudo iptables -t nat -L PREROUTING -n -v  # Ver reglas REDIRECT
-sudo iptables -t nat -L POSTROUTING -n -v  # Ver regla MASQUERADE
+sudo journalctl -u digital-memoirs -n 100
+df -h  # Verificar espacio en disco
+ls -la uploads/  # Verificar permisos
 ```
 
 ---
 
-### **3. Endpoints Flask actualizados (`app.py`)**
+## 📖 Documentación Relacionada
 
-**Endpoints agregados/modificados:**
-
-- `@app.route('/hotspot-detect.html')` → iOS captive portal (línea 398)
-- `@app.route('/library/test/success.html')` → iOS alternativo (línea 399)
-- `@app.route('/generate_204')` → Android captive portal (línea 405)
-- `@app.route('/gen_204')` → Android alternativo (línea 406)
-- `@app.route('/connecttest.txt')` → Windows captive portal (línea 437)
-- `@app.route('/ncsi.txt')` → Windows alternativo (línea 438)
-
-**Respuesta Android `/generate_204`:**
-- Código HTTP 200 con HTML auto-redirect
-- Headers: `Content-Type: text/html; charset=utf-8`
-- Headers: `Cache-Control: no-cache, no-store, must-revalidate`
-- Meta refresh: `<meta http-equiv="refresh" content="0; url=/upload">`
-- JavaScript fallback: `setTimeout(() => window.location.href = '/upload', 100)`
+- **README.md** - Instalación y uso general
+- **CHANGELOG.md** - Historial de versiones
+- **.github/CLAUDE.md** - Documentación técnica completa
+- **scripts/README.md** - Guía de scripts
+- **scripts/SOLUCION_TIMEOUT.md** - Detalles del bug de timeout
+- **scripts/AUTOSTART_BROWSER.md** - Setup de autostart completo
 
 ---
 
-### **4. Estado actual y problemas conocidos**
-
-**✅ Funcionando correctamente:**
-- dnsmasq resolviendo DNS con wildcards
-- iptables redirigiendo HTTP puerto 80 → 5000
-- Flask respondiendo a endpoints captive portal
-- Configuración persistente después de reinicio
-
-**⚠️ Problema pendiente (Android):**
-- Android NO muestra notificación "Sign in to network" automáticamente
-- Abre navegador pero requiere tocar "USE AS IS" manualmente
-- Causa probable: Android no reconoce respuesta HTTP como captive portal válido
-- Workaround: Instruir a usuarios que toquen "USE AS IS"
-
-**✅ Plan B confirmado:**
-- QR con URL directa: `http://10.0.17.1:5000/upload`
-- Instrucciones: "Conectar a WiFi → Tocar 'USE AS IS' → Navegar a URL"
-
----
-
-### **5. Comandos útiles para debugging**
-
-**Ver logs en tiempo real:**
-```bash
-# Logs de dnsmasq
-sudo journalctl -u dnsmasq -f
-
-# Logs de Flask (en terminal donde corre)
-python3 app.py
-
-# Tráfico iptables
-watch -n 1 'sudo iptables -t nat -L PREROUTING -n -v'
-```
-
-**Probar endpoints manualmente:**
-```bash
-curl -v http://localhost:5000/generate_204
-curl -v http://localhost:5000/hotspot-detect.html
-nslookup connectivitycheck.gstatic.com localhost
-```
-
-**Restaurar configuración:**
-```bash
-# Restaurar dnsmasq
-sudo cp /etc/dnsmasq.conf.backup.* /etc/dnsmasq.conf
-sudo systemctl restart dnsmasq
-
-# Restaurar iptables
-sudo iptables-restore < ~/iptables-backup-*.txt
-```
-
----
-
-25/10/2025
-
-## ✅ **Captive Portal HTTP 302 Redirect Fix**
-
-### **Issue: Android CNA Cerraba Inmediatamente - HTTP 200 Response Bug**
-
-- **Status:** ✅ RESUELTO
-- **Descripción:** El navegador cautivo (CNA) de Android se cerraba inmediatamente después de conectarse al WiFi, requiriendo que el usuario presione "USE AS IS" manualmente
-- **Causa Raíz:** Los endpoints de captive portal respondían con `HTTP 200 OK` en lugar de `HTTP 302 Redirect`
-  - Android interpreta HTTP 200 como "internet disponible" → cierra CNA
-  - Android interpreta HTTP 302 como "portal cautivo activo" → mantiene CNA abierto
-- **Endpoints afectados:**
-  - `@app.route('/hotspot-detect.html')` - iOS
-  - `@app.route('/generate_204')` - Android
-  - `@app.route('/connecttest.txt')` - Windows
-- **Solución:** Cambiar de `render_template('upload.html')` → `redirect(url_for('upload_page'))`
-- **Resultado Esperado:**
-  - Android abre CNA automáticamente
-  - CNA navega a `/upload` sin intervención del usuario
-  - CNA permanece abierto mientras el usuario sube fotos
-  - NO requiere presionar "USE AS IS"
-- **Testing:** Pendiente para 12:00 PM (25/10/2025)
-- **Archivos Modificados:** `app.py:398-423`
-
-#### **Código Anterior (INCORRECTO):**
-```python
-def android_captive_portal():
-    logger.info("🤖 Android captive portal detected - showing /upload")
-    response = '''<!DOCTYPE html>...'''
-    resp = make_response(response, 200)  # ❌ HTTP 200 → Cierra CNA
-    return resp
-```
-
-#### **Código Nuevo (CORRECTO):**
-```python
-def android_captive_portal():
-    logger.info("🤖 Android captive portal detected - redirecting to /upload")
-    # FIX: Use HTTP 302 redirect instead of HTTP 200
-    # This keeps Android CNA (Captive Network Assistant) open
-    return redirect(url_for('upload_page'))  # ✅ HTTP 302 → Mantiene CNA abierto
-```
-
----
-
-21/10/2025
-
-## ✅ **Camera Functionality Investigation & Widget Orientation Fix**
-
-### **Issue 1: Camera Button Not Working - getUserMedia API Blocked**
-
-**Status:** ✅ RESOLVED (Feature Disabled)
-**Date:** 21/10/2025
-
-#### **Problem Description:**
-- Camera button in `/upload` page threw `TypeError: Cannot read properties of undefined (reading 'getUserMedia')`
-- Error occurred when accessing from HTTP on local IP (e.g., `http://192.168.6.105:5000/upload`)
-- All getUserMedia APIs returned `undefined`:
-  - `navigator.mediaDevices` - undefined
-  - `navigator.getUserMedia` - false
-  - `navigator.webkitGetUserMedia` - false
-  - `navigator.mozGetUserMedia` - false
-  - `navigator.msGetUserMedia` - false
-
-#### **Root Cause:**
-Modern browsers (Chrome, Brave, Firefox) block `getUserMedia` API in **insecure contexts** (HTTP on non-localhost IPs) for security reasons. This is a browser-level security policy that cannot be bypassed without HTTPS.
-
-#### **Investigation Steps:**
-1. Implemented comprehensive polyfill to detect all available getUserMedia APIs (upload.html:741-794)
-2. Added detailed console logging to diagnose which APIs were available
-3. Confirmed all APIs blocked in HTTP context on local network IP
-
-#### **Solution Implemented:**
-- **Disabled camera button** with visual indicators:
-  - Added `.camera-disabled` CSS class with grayed-out styling (upload.html:278-304)
-  - Changed button text to show "⚠️ no disponible"
-  - Implemented `showCameraDisabledMessage()` function with informative error message
-  - Cursor changes to `not-allowed` on hover
-- **Preserved "Seleccionar Fotos" functionality** - works perfectly
-- Camera feature can be re-enabled in future by configuring HTTPS with SSL certificates
-
-#### **Files Modified:**
-- `templates/upload.html:671-675` - Added `camera-disabled` class to button
-- `templates/upload.html:278-304` - CSS styling for disabled state
-- `templates/upload.html:741-794` - Polyfill implementation with debugging
-- `templates/upload.html:1235-1244` - Disabled message function
-
-#### **Future Enhancement:**
-To re-enable camera functionality, configure Flask with HTTPS using self-signed certificates:
-```python
-app.run(host='0.0.0.0', port=5000, ssl_context='adhoc')
-```
-Or use proper SSL certificates with nginx/apache reverse proxy.
-
----
-
-### **Issue 2: Widget Orientation Mismatch in Display**
-
-**Status:** ✅ RESOLVED
-**Date:** 21/10/2025
-
-#### **Problem Description:**
-- Slideshow container rotated 90 degrees for landscape projection
-- "Sistema Activo" and "0 FOTOS" widgets remained horizontal
-- Visual inconsistency with rotated slideshow content
-
-#### **Solution Implemented:**
-- Applied `transform: rotate(90deg)` to both widgets
-- **Left widget** ("Sistema Activo"):
-  - `transform: rotate(90deg) translateY(-100%)`
-  - `transform-origin: top left`
-- **Right widget** ("0 FOTOS"):
-  - `transform: rotate(90deg) translateX(100%)`
-  - `transform-origin: top right`
-- Both widgets now align with slideshow orientation
-
-#### **Files Modified:**
-- `templates/display.html:111-116` - Header widget rotation
-- `templates/display.html:153-158` - Photo counter rotation
-
-#### **Result:**
-All UI elements now display in consistent vertical orientation for landscape projection.
-
----
-
-15/10/2025
-
-## Priority Issues
-
-### 1. Fix Raspberry Pi Access Point Connection Stability
-
-**Status:** DONE
-
----
-
-### 2. Fix Duplicate Browser Tab Opening on Startup
-
-**Status:** Done
-**Description:** When the Flask application starts, it automatically opens the default browser to the `/qr` endpoint. However, it consistently opens **two tabs** instead of one.
-
-**Current Behavior:**
-
-- Expected: Opens 1 tab to `/qr` endpoint
-- Actual: Opens 2 tabs to `/qr` endpoint
-
-**Location:** `app.py` - likely in the `open_browser()` function or threading logic
-
-**Investigation Needed:**
-
-- Check if `webbrowser.open()` is being called multiple times
-- Verify threading implementation for browser auto-launch
-- Review any duplicate signal handlers or initialization code
-
----
-
-### 3. Change Static IP to New Subnet (10.0.17.0/24)
-
-**Status:** Done
-**Description:** Migrate the Raspberry Pi access point from the current subnet `192.168.10.0/24` to a new subnet `10.0.17.0/24`.
-
-**Configuration Details:**
-
-- **Access Point IP (Gateway):** `10.0.17.1`
-- **Subnet Mask:** `255.255.255.0` (CIDR: `/24`)
-- **DHCP Range:** `10.0.17.2 - 10.0.17.254` (suggested)
-- **Reserved:** `10.0.17.1` (must not be assigned to clients to avoid conflicts)
-
-**Files to Update:**
-
-- Hotspot configuration scripts (dnsmasq.conf, hostapd settings)
-- Flask app QR code generation logic (if hardcoded IP)
-- Documentation and README references
-
-**Rationale:**
-
-- Avoid conflicts with common router subnets (192.168.x.x)
-- Use less common subnet range for dedicated event network
-
----
-
-## Notes
-
-- All tasks should be tested on Raspberry Pi hardware before being marked complete
-- Document any configuration changes in CLAUDE.md
-- Update README.md with new network configuration details when task #3 is complete
-- Consider creating a troubleshooting guide based on findings from task #1
-
----
-
-19/10/2025
-
-## ✅ **Bug de Botón de Cámara Resuelto**
-
-### **Issue: Botón de Selfie No Ejecutaba Ninguna Acción**
-
-- **Status:** ✅ RESUELTO
-- **Descripción:** Al presionar el botón "Tomar Foto" (📷) en `/upload`, no ocurría ninguna acción
-- **Causa Raíz:** Template mismatch en `app.py` - intentaba servir archivos inexistentes:
-  - `render_template('upload_fixed.html')` → Archivo no existe
-  - `render_template('display_fixed.html')` → Archivo no existe
-  - `render_template('qr_fixed.html')` → Archivo no existe
-- **Solución:** Corregidos nombres en `app.py` para usar archivos reales:
-  - `upload.html` ✅
-  - `display.html` ✅
-  - `qr.html` ✅
-- **Testing:** Verificado funcionando - página carga correctamente y botón ejecuta función JavaScript
-- **Archivos Modificados:** `app.py:162, 176, 185`
-
----
-
-17/10/2025
-
-## 📋 Resumen de Issues Corregidos
-
-### ✅ **PRIORIDAD ALTA - PROBLEMAS CRÍTICOS RESUELTOS**
-
-#### 1. **CSS Container Desalineado y Rendimiento (display.html)**
-
-- **Problema:** El contenedor del slideshow no se centraba correctamente y el gradiente causaba problemas de rendimiento en Mozilla
-- **Solución Implementada:**
-  - Cambié `position: relative` a `position: fixed` para el contenedor del slideshow
-  - Reemplazé `margin-left/margin-top` por `transform: translate(-50%, -50%) rotate(90deg)`
-  - Simplificé el gradiente de fondo: eliminé el gradiente lineal complejo y usé radiales estáticos
-  - Agregué `will-change: auto` y `backface-visibility: hidden` para optimizar el rendimiento
-  - Reduje el número de partículas de 20 a 15 para mejor performance
-
-#### 2. **Loop Crítico del Botón de Cámara (upload.html)**
-
-- **Problema:** Bucle infinito cuando se abre/cierra la cámara y luego se intenta abrir galería
-- **Solución Implementada:**
-  - Agregué control de estado `isCameraOpen` y `cameraCloseTimeout`
-  - Implementé `closeCamera()` con limpieza completa de streams
-  - Agregué prevención de loops con timeout de 300ms
-  - Separé las funciones `selectFiles()` y `toggleCamera()`
-  - Implementé botón de cámara visible con interfaz dedicada
-
-#### 3. **Manejo de Cargas Masivas (+800 imágenes)**
-
-- **Problema:** Falla al cargar más de 800 imágenes simultáneas
-- **Solución Implementada:**
-  - Agregué límite de batch `BATCH_UPLOAD_LIMIT = 800`
-  - Implementé `ThreadPoolExecutor` para procesamiento concurrente
-  - Agregué timeout de 30 segundos por archivo
-  - Mejoré manejo de errores con reporte de archivos fallidos
-  - Implementé validación previa con advertencia al usuario
-
-### ✅ **MEJORAS GENERALES IMPLEMENTADAS**
-
-#### 4. **Tema Oscuro y Fuentes Monoespaciadas**
-
-- Cambié todas las fuentes a `'Fira Code', 'Consolas', 'Monaco', monospace`
-- Implementé paleta de colores oscuros consistente con variables CSS
-- Agregué efectos de glassmorphism y gradientes modernos
-- Mejoré la jerarquía visual con mejor contraste
-
-#### 5. **Optimizaciones de Rendimiento**
-
-- Agregué soporte para `HEIC` y `HEIF` (fotos de iPhone)
-- Implementé logging mejorado con niveles INFO/ERROR
-- Agregué endpoint `/api/status` para health checks
-- Optimicé la renderización con `transform-style: preserve-3d`
-- Agregué `@media (prefers-reduced-motion: reduce)` para accesibilidad
-
-#### 6. **Manejo Robusto de Errores**
-
-- Implementé try-catch en todas las funciones críticas
-- Agregué error handlers HTTP (413, 500)
-- Mejoré logs con traceback completo
-- Agregué validación de archivos más estricta
-
----
-
-## 📁 **Archivos Corregidos Entregados**
-
-### 🎯 **Archivos Principales**
-
-- `display_fixed.html` - Slideshow corregido con centrado perfecto
-- `upload_fixed.html` - Upload con botón de cámara y prevención de loops  
-- `app_fixed.py` - Backend mejorado con límites de batch y concurrencia
-- `qr_fixed.html` - Página QR con tema oscuro moderno
-
-### 🔄 **Cómo Implementar**
-
-1. **Reemplaza los archivos originales:**
-
-   ```bash
-   # Backup de archivos originales
-   mv templates/display.html templates/display_backup.html
-   mv templates/upload.html templates/upload_backup.html
-   mv templates/qr.html templates/qr_backup.html
-   mv app.py app_backup.py
-   
-   # Instala los archivos corregidos
-   cp display_fixed.html templates/display.html
-   cp upload_fixed.html templates/upload.html
-   cp qr_fixed.html templates/qr.html
-   cp app_fixed.py app.py
-   ```
-
-2. **Ejecuta la aplicación:**
-
-   ```bash
-   python app.py
-   ```
-
----
-
-## 🧪 **Testing Recomendado**
-
-### ✅ **Pruebas de Validación**
-
-1. **CSS Container:** Verificar que el slideshow se centre perfectamente en pantalla
-2. **Botón Cámara:** Probar ciclo abre → cierra → galería → cámara sin loops
-3. **Cargas Masivas:** Intentar subir 900+ imágenes y verificar manejo controlado
-4. **Performance:** Verificar que no hay lag del cursor en Mozilla Firefox
-5. **Responsive:** Probar en móvil, tablet y desktop
-
-### 🎯 **Características Nuevas para Probar**
-
-- Botón de cámara funcional con captura directa
-- Límite de 800 archivos con advertencia al usuario
-- Tema oscuro consistente en todas las páginas
-- Indicadores de progreso mejorados
-- Health check endpoint en `/api/status`
-
----
-
-## 📊 **Resultados Esperados**
-
-| Issue Original | Estado | Resultado Esperado |
-|---------------|--------|-------------------|
-| Container CSS descentrado | ✅ Corregido | Slideshow perfectamente centrado |
-| Loop botón cámara | ✅ Corregido | Sin bucles infinitos, flujo limpio |
-| Crash +800 imágenes | ✅ Corregido | Límite controlado con mensajes claros |
-| Gradiente lag cursor | ✅ Corregido | Performance fluido en todos los navegadores |
-| Falta botón cámara | ✅ Implementado | Interfaz completa con captura directa |
-
----
-
-## 🎨 **Mejoras Estéticas Implementadas**
-
-- **Glassmorphism:** Efectos de cristal con blur y transparencias
-- **Gradientes Animados:** Bordes que pulsan y brillan suavemente
-- **Partículas de Fondo:** Animaciones sutiles para ambiente dinámico
-- **Tipografía Monospace:** Consistencia en todas las interfaces
-- **Micro-interacciones:** Hovers, transforms y transiciones suaves
-
----
-
-## 🚀 **Próximos Pasos Sugeridos**
-
-1. **Implementar los archivos corregidos**
-2. **Probar cada issue reportado para confirmar las correcciones**
-3. **Realizar testing de carga con 700-900 imágenes**
-4. **Considerar asignación de nombres de dominio amigables** (punto de prioridad media)
-
-Los archivos están listos para implementación inmediata. Cada corrección ha sido documentada y probada conceptualmente.
+**Última revisión:** 2025-10-28
+**Estado del proyecto:** Funcional en producción
+**Próximo milestone:** SSD external storage configuration
